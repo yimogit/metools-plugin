@@ -1,0 +1,27 @@
+{
+    "name": "MeTools", //扩展程序名称
+    "version": "1.0", //版本
+    "manifest_version": 2, //一定要为2，否则会报错
+    "description": "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解密，二维码生成/识别,百度/有道的英汉互译,md与html互转，模板替换等功能", //扩展程序描述
+    "homepage_url": "http:///tools.yimo.link/",
+    "icons": {
+        "16": "logo.png",
+        "48": "logo.png",
+        "128": "logo.png"
+    },
+    "browser_action": {
+        "default_title": "MeTools",
+        "default_icon": "logo.png", //默认图标
+        "default_popup": "index.html" //点击图标时弹出的页面
+    },
+    "omnibox": {
+        "keyword": "metools"
+    },
+    "permissions": [
+        "tabs", // 标签
+        "webRequest", // web请求
+        "storage", // 插件本地存储
+        "http://*/*",
+        "https://*/*"
+    ]
+}
