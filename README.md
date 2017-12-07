@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools)
 
 ### 插件预览
+在线访问：https://yimogit.github.io/metools-plugin/
+
 ![图片](https://dn-coding-net-production-pp.qbox.me/89415c80-dae3-46dc-9abe-94fcad9971f1.png)
 
 
@@ -10,6 +12,12 @@
 0. 还原依赖包: `npm install` 
 1. 运行：`npm run dev` 
 2. 打包：`npm run build` //回自动将manifest.json与logo.png复制到dist目录，dist目录为插件目录
+
+## 插件安装   
+0. [下载插件](https://github.com/yimogit/metools-plugin/releases/download/v1.0/metools.crx) 
+1. 打开chrome扩展页：chrome://extensions/
+2. 将扩展拖到浏览器中。。
+因为交不了chrome开发者费用，所以如果科学上网了的话，插件将会受影响~
 
 ## 插件调试
 0. 你需要一个chrome浏览器
