@@ -1,5 +1,6 @@
 ## 这是什么？
 >这是一个一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解密，二维码生成/识别,百度/有道的英汉互译,md与html互转，模板替换等功能
+[![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools)
 
 ### 插件预览
 ![图片](https://dn-coding-net-production-pp.qbox.me/89415c80-dae3-46dc-9abe-94fcad9971f1.png)
@@ -21,7 +22,3 @@
 
 ## 插件开发
 Api文档：http://open.chrome.360.cn/extension_dev/overview.html
-
-## 遇到的坑
-1. 不支持jsonp
-2. 不支持行内 javascript代码
