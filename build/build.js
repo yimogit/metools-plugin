@@ -24,6 +24,7 @@ mkdir('-p', assetsPath)
 cp('-R', 'static/*', assetsPath)
 cp('-R', 'manifest.json', config.build.assetsRoot)
 cp('-R', 'logo.png', config.build.assetsRoot)
+cp('-R', 'CNAME', config.build.assetsRoot)
 
 webpack(webpackConfig, function (err, stats) {
   spinner.stop()
