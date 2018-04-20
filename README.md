@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools)
 
 ### 插件预览
-在线访问：https://yimogit.github.io/metools-plugin/
+在线访问：https://metools.js.org
 
 ![图片](https://dn-coding-net-production-pp.qbox.me/89415c80-dae3-46dc-9abe-94fcad9971f1.png)
 
