@@ -14,10 +14,11 @@
 2. 打包：`npm run build` //回自动将manifest.json与logo.png复制到dist目录，dist目录为插件目录
 
 ## 插件安装   
-0. [下载插件](https://github.com/yimogit/metools-plugin/releases/download/v1.0/metools.crx) 
+0. [商店下载](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie)
+0. [Github下载](https://github.com/yimogit/metools-plugin/releases/download/v1.0/metools.crx) 
 1. 打开chrome扩展页：chrome://extensions/
 2. 将扩展拖到浏览器中。。
-因为交不了chrome开发者费用，所以如果科学上网了的话，插件将会受影响~
+
 
 ## 插件调试
 0. 你需要一个chrome浏览器
