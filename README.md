@@ -11,7 +11,7 @@
 ## 项目如何启动
 0. 还原依赖包: `npm install` 
 1. 运行：`npm run dev` 
-2. 打包：`npm run build` //回自动将manifest.json与logo.png复制到dist目录，dist目录为插件目录
+2. 打包：`npm run build` //会自动将manifest.json与logo.png复制到dist目录，dist目录为插件目录
 
 ## 插件安装   
 0. [商店下载](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie)
