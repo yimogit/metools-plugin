@@ -5,25 +5,23 @@
     </div>
 </template>
 <script>
-    export default {
-        props:['show','type','typeOne'],
-        data(){
-            return {
-                lodingId:null
-            }
-        },
-        created(){
-        },
-        watch:{
-            'show':function(val){
-                let self=this;
-                if(val==true){
-                    self.lodingId=layer.load(self.type||0)
-                }
-                else{
-                    layer.close(self.lodingId)
-                }
-            }
-        }
+export default {
+  props: ['show', 'type', 'typeOne'],
+  data() {
+    return {
+      lodingId: null
     }
+  },
+  created() {},
+  watch: {
+    show: function(val) {
+      let self = this
+      if (val == true) {
+        self.lodingId = window.layui.layer.load(self.type || 0)
+      } else {
+        window.layui.layer.close(self.lodingId)
+      }
+    }
+  }
+}
 </script>

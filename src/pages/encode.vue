@@ -1,163 +1,164 @@
 <template>
-    <v-tab :items="tabItems">
-    
-        <div slot="main">
-            <div class="layui-form-item layui-form-text">
-                    <textarea v-model="model.beforeTxt"
-                              placeholder="转换前字符串..."
-                              class="layui-textarea"></textarea>
-            </div>
-            <div class="layui-form-item layui-form-text">
-                    <v-radio :value="model.currentType"
-                             :optionVals="codeTypes"
-                             @input="currentHandler"></v-radio>
-            </div>
-            <div class="layui-form-item layui-form-text">
-                    <v-button @click="encode(model.currentType)">
-                        <span><i class="layui-icon">&#xe61a; </i>编码</span>
-                    </v-button>
-                    <v-button @click="decode(model.currentType)">
-                        <span>解码 <i class="layui-icon">&#xe619; </i></span>
-                    </v-button>
-            </div>
-            <div class="layui-form-item layui-form-text">
-                    <textarea v-model="model.afterTxt"
-                              placeholder="转换后字符串..." 
-                              class="layui-textarea"></textarea>
-            </div>
-        </div>
-    </v-tab>
+  <v-tab :items="tabItems">
+
+    <div slot="main">
+      <div class="layui-form-item layui-form-text">
+        <textarea v-model="model.beforeTxt" placeholder="转换前字符串..." class="layui-textarea"></textarea>
+      </div>
+      <div class="layui-form-item layui-form-text">
+        <v-radio :value="model.currentType" :optionVals="codeTypes" @input="currentHandler"></v-radio>
+      </div>
+      <div class="layui-form-item layui-form-text">
+        <v-button @click="encode(model.currentType)">
+          <span>
+            <i class="layui-icon">&#xe61a; </i>编码</span>
+        </v-button>
+        <v-button @click="decode(model.currentType)">
+          <span>解码
+            <i class="layui-icon">&#xe619; </i>
+          </span>
+        </v-button>
+      </div>
+      <div class="layui-form-item layui-form-text">
+        <textarea v-model="model.afterTxt" placeholder="转换后字符串..." class="layui-textarea"></textarea>
+      </div>
+    </div>
+  </v-tab>
 </template>
 <script>
-import CryptoJS from "crypto-js";
-import common from "../utils/common";
+import CryptoJS from 'crypto-js'
+import common from '../utils/common'
 export default {
+  meta: {
+    menuName: '编码/解码',
+    sort: 202
+  },
   data() {
     return {
       tabItems: [
         {
-          Name: "main",
-          Title: "编码转换"
+          Name: 'main',
+          Title: '编码转换'
         }
       ],
       model: {
-        beforeTxt: "",
-        afterTxt: "",
-        currentType: ""
+        beforeTxt: '',
+        afterTxt: '',
+        currentType: ''
       },
-      codeTypes: ["utf-8", "ascii", "unicode", "url", "base64", "html"]
-    };
+      codeTypes: ['utf-8', 'ascii', 'unicode', 'url', 'base64', 'html']
+    }
   },
   watch: {
-    $route: "fetchData"
+    $route: 'fetchData'
   },
   created() {
-    this.fetchData();
+    this.fetchData()
   },
   methods: {
     fetchData() {
-      this.model.currentType = this.codeTypes[0];
+      this.model.currentType = this.codeTypes[0]
     },
     currentHandler(item) {
-      this.model.currentType = item;
+      this.model.currentType = item
     },
     encode(type) {
-      let self = this;
+      let self = this
       let data = {
-        beforeTxt: this.model.beforeTxt || "",
-        afterTxt: ""
-      };
+        beforeTxt: this.model.beforeTxt || '',
+        afterTxt: ''
+      }
       switch (type) {
-        case "utf-8":
+        case 'utf-8':
           data.afterTxt = data.beforeTxt.replace(/[^\u0000-\u00FF]/g, function(
             $0
           ) {
-            return escape($0).replace(/(%u)(\w{4})/gi, "&#x$2;");
-          });
-          break;
-        case "ascii":
-          var character = data.beforeTxt;
-          var ascii = "";
+            return escape($0).replace(/(%u)(\w{4})/gi, '&#x$2;')
+          })
+          break
+        case 'ascii':
+          var character = data.beforeTxt
+          var ascii = ''
           for (var i = 0; i < character.length; i++) {
-            var code = Number(character[i].charCodeAt(0));
-            var charAscii = code.toString(16);
+            var code = Number(character[i].charCodeAt(0))
+            var charAscii = code.toString(16)
             charAscii =
-              new String("0000").substring(charAscii.length, 4) + charAscii;
-            ascii += "\\u" + charAscii;
+              new String('0000').substring(charAscii.length, 4) + charAscii
+            ascii += '\\u' + charAscii
           }
-          data.afterTxt = ascii;
-          break;
-        case "unicode":
+          data.afterTxt = ascii
+          break
+        case 'unicode':
           for (var i = 0; i < data.beforeTxt.length; i++)
             data.afterTxt =
-              data.afterTxt + "&#" + data.beforeTxt.charCodeAt(i) + ";";
-          break;
-        case "url":
-          data.afterTxt = encodeURIComponent(data.beforeTxt);
-          break;
-        case "base64":
-          var str = CryptoJS.enc.Utf8.parse(data.beforeTxt);
-          data.afterTxt = CryptoJS.enc.Base64.stringify(str);
-          break;
-        case "html":
-          data.afterTxt = common.toUbb(data.beforeTxt);
-          break;
+              data.afterTxt + '&#' + data.beforeTxt.charCodeAt(i) + ';'
+          break
+        case 'url':
+          data.afterTxt = encodeURIComponent(data.beforeTxt)
+          break
+        case 'base64':
+          var str = CryptoJS.enc.Utf8.parse(data.beforeTxt)
+          data.afterTxt = CryptoJS.enc.Base64.stringify(str)
+          break
+        case 'html':
+          data.afterTxt = common.toUbb(data.beforeTxt)
+          break
         default:
-          break;
+          break
       }
-      self.model.afterTxt = data.afterTxt;
+      self.model.afterTxt = data.afterTxt
     },
     decode(type) {
-      let self = this;
+      let self = this
       let data = {
-        beforeTxt: "",
-        afterTxt: this.model.afterTxt || ""
-      };
+        beforeTxt: '',
+        afterTxt: this.model.afterTxt || ''
+      }
       switch (type) {
-        case "utf-8":
+        case 'utf-8':
           data.beforeTxt = unescape(
-            data.afterTxt.replace(/&#x/g, "%u").replace(/;/g, "")
-          );
-          break;
-        case "ascii":
-          var character = data.afterTxt.split("\\u");
-          var native1 = character[0];
+            data.afterTxt.replace(/&#x/g, '%u').replace(/;/g, '')
+          )
+          break
+        case 'ascii':
+          var character = data.afterTxt.split('\\u')
+          var native1 = character[0]
           for (var i = 1; i < character.length; i++) {
-            var code = character[i];
+            var code = character[i]
             native1 += String.fromCharCode(
-              parseInt("0x" + code.substring(0, 4))
-            );
+              parseInt('0x' + code.substring(0, 4))
+            )
             if (code.length > 4) {
-              native1 += code.substring(4, code.length);
+              native1 += code.substring(4, code.length)
             }
           }
-          data.beforeTxt = native1;
-          break;
-        case "unicode":
-          var code = data.afterTxt.match(/&#(\d+);/g);
+          data.beforeTxt = native1
+          break
+        case 'unicode':
+          var code = data.afterTxt.match(/&#(\d+);/g)
           if (code == null) {
-            break;
+            break
           }
           for (var i = 0; i < code.length; i++)
             data.beforeTxt =
               data.beforeTxt +
-              String.fromCharCode(code[i].replace(/[&#;]/g, ""));
-          break;
-        case "url":
-          data.beforeTxt = decodeURIComponent(data.afterTxt);
-          break;
-        case "base64":
-          var words = CryptoJS.enc.Base64.parse(data.afterTxt);
-          data.beforeTxt = words.toString(CryptoJS.enc.Utf8);
-          break;
-        case "html":
-          data.beforeTxt = common.toHtml(data.afterTxt);
-          break;
+              String.fromCharCode(code[i].replace(/[&#;]/g, ''))
+          break
+        case 'url':
+          data.beforeTxt = decodeURIComponent(data.afterTxt)
+          break
+        case 'base64':
+          var words = CryptoJS.enc.Base64.parse(data.afterTxt)
+          data.beforeTxt = words.toString(CryptoJS.enc.Utf8)
+          break
+        case 'html':
+          data.beforeTxt = common.toHtml(data.afterTxt)
+          break
         default:
-          break;
+          break
       }
-      self.model.beforeTxt = data.beforeTxt;
+      self.model.beforeTxt = data.beforeTxt
     }
   }
-};
+}
 </script>
