@@ -6,7 +6,10 @@ const allpages = getAllPages()
 function getAllPages() {
   const files = require.context('../pages', true, /\.vue/)
   const modules = []
-  const menus = JSON.parse(localStorage.InsertMenus || '[]')
+  const menus = JSON.parse(localStorage.InsertMenus || '[]').map(e => {
+    return Object.assign(e, JSON.parse(localStorage.getItem(e.menuUrl)))
+  })
+  console.log(menus)
   files.keys().forEach(key => {
     var mk = key.replace(/(^\.\/|\.vue$)/g, '')
     var m = files(key)
