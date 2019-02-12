@@ -44,7 +44,7 @@
             id="canvas_ext_div"
           >
             <label style="height:30px;line-height:30px;">
-              <span>选择要识别的二维码，或者拖动图片到面板中</span>
+              <span>选择要识别的二维码，粘贴剪切板或者拖动图片到面板中</span>
               <input
                 type="file"
                 name="files"
