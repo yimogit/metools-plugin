@@ -1,6 +1,6 @@
 {
   "name": "MeTools",
-  "version": "1.1",
+  "version": "1.2",
   "manifest_version": 2,
   "description":
     "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解密，二维码生成/识别,百度/有道的英汉互译,md与html互转，模板替换等功能",
