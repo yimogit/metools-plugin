@@ -86,7 +86,10 @@
         ></textarea>
       </div>
       <div>
-          浏览器访问地址：<a href="https://metools.js.org/#/genpwd" target="_blank">https://metools.js.org/#/genpwd</a>
+        浏览器访问地址：<a
+          href="https://metools.js.org/#/genpwd"
+          target="_blank"
+        >https://metools.js.org/#/genpwd</a>
       </div>
     </div>
   </v-tab>
@@ -141,6 +144,9 @@ export default {
   },
   created() {
     var _this = this;
+    if (_this.$route.query.type === 'htpasswd') {
+      this.tabItems = this.tabItems.reverse();
+    }
     if (typeof chrome != undefined && chrome.tabs) {
       chrome.tabs.getSelected(function(tab) {
         _this.model.domainName = this.getDomain(tab.url);
@@ -149,10 +155,10 @@ export default {
       _this.model.domainName = location.host;
     }
   },
-  watch:{
-      currentHtpasswdType(val){
-          this.genHtpasswd()
-      }
+  watch: {
+    currentHtpasswdType(val) {
+      this.genHtpasswd();
+    }
   },
   methods: {
     getDomain(weburl) {
