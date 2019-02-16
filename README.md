@@ -1,7 +1,7 @@
 ## 这是什么？
 
-> 这是一个使用 vue.js 构建的纯静态工具,包含多种格式的加密/解密，编码/解密，二维码生成/识别,百度/有道的英汉互译,md 与 html 互转，模板替换等功能
-> [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools)
+> 这是一个使用 vue.js 构建的纯静态工具,包含多种格式的加密/解密，编码/解密,密码生成器(htpasswd)，二维码生成/识别,百度/有道的英汉互译,md 与 html 互转，模板替换等功能
+> [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools-plugin)
 
 ### 插件预览
 
