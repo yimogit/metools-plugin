@@ -149,7 +149,7 @@ export default {
     }
     if (typeof chrome != undefined && chrome.tabs) {
       chrome.tabs.getSelected(function(tab) {
-        _this.model.domainName = this.getDomain(tab.url);
+        _this.model.domainName = _this.getDomain(tab.url);
       });
     } else {
       _this.model.domainName = location.host;
