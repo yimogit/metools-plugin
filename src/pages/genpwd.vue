@@ -162,8 +162,8 @@ export default {
   },
   methods: {
     getDomain(weburl) {
-      var urlReg = /http:\/\/([^\/]+)/i;
-      domain = weburl.match(urlReg);
+      var urlReg = /http[s]:\/\/([^\/]+)/i;
+      var domain = weburl.match(urlReg);
       return domain != null && domain.length > 1 ? domain[1] : "";
     },
     genSitePwd() {
