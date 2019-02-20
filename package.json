@@ -1,6 +1,6 @@
 {
   "name": "metools",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "meTools",
   "author": "yimo",
   "private": true,
@@ -13,6 +13,7 @@
     "crypto-js": "^3.1.9-1",
     "jr-qrcode": "^1.0.5",
     "marked": "^0.3.6",
+    "qr-code-with-logo": "^1.1.0",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1"
   },

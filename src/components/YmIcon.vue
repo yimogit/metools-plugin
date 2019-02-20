@@ -6,6 +6,9 @@
     <template v-if="icon=='down'">
       &#xe61a;
     </template>
+    <template v-if="icon=='delete'">
+      &#xe640;
+    </template>
   </i>
 </template>
 
