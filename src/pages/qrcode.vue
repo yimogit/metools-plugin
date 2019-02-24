@@ -1,12 +1,26 @@
 <template>
   <v-tab :items="tabItems">
     <div slot="generatecode">
-      <div class="layui-form-item" >
-        <v-button @click="addItem">添加新项</v-button>
-        <v-button @click="saveData">保存数据</v-button>
-        <v-button @click="s=>showMoreBtn=!showMoreBtn" :icon="showMoreBtn?'right':'down'">更多</v-button>
+      <div class="layui-form-item">
+        <v-button @click="addItem">
+          <span>添加新项
+            <i class="layui-icon">&#xe654;</i>
+          </span>
+        </v-button>
+        <v-button @click="saveData">
+          <span>保存数据
+            <i class="layui-icon">&#xe60e; </i>
+          </span>
+        </v-button>
+        <v-button
+          @click="s=>showMoreBtn=!showMoreBtn"
+          :icon="showMoreBtn?'right':'down'"
+        >更多</v-button>
       </div>
-      <div class="layui-form-item layui-form-text" v-if="showMoreBtn">
+      <div
+        class="layui-form-item layui-form-text"
+        v-if="showMoreBtn"
+      >
         <label style="float:left">
           <span style="float:left;line-height:38px;">背景色:</span>
           <input
@@ -28,7 +42,10 @@
           />
         </label>
       </div>
-      <div class="layui-form-item " v-if="showMoreBtn">
+      <div
+        class="layui-form-item "
+        v-if="showMoreBtn"
+      >
         <v-upload
           @before="addImage"
           :beforeShow="true"
@@ -36,13 +53,15 @@
           style="height:30px;"
         >
           <v-button style="position: absolute;">
-            添加LOGO
+            <span>上传 Logo
+              <i class="layui-icon">&#xe62f;</i>
+            </span>
           </v-button>
         </v-upload>
         <img
           v-if="form.logoImg"
           :src="form.logoImg"
-          style="width:40px;height:40px;"
+          style="width:40px;height:40px;margin-left:5px;"
         />
         <button
           class="layui-btn layui-btn-danger layui-btn-mini"
@@ -60,7 +79,7 @@
         <legend>第{{dataList.length-index}}项
           <button
             class="layui-btn layui-btn-danger layui-btn-mini"
-            @click="e=>dataList.splice(dataList.length-index-1,1)"
+            @click="delItem(index)"
           >
             <i class="layui-icon">&#xe640;</i>
           </button>
@@ -71,7 +90,7 @@
             placeholder="将要生成二维码的文本或链接"
             v-model="item.text"
             @change="convert"
-            :row="2"
+            :rows="2"
           ></v-input-txt>
           <img
             :src="item.src"
@@ -126,7 +145,7 @@ import common from "../utils/common";
 export default {
   meta: {
     menuName: "二维码生成/识别",
-    sort: 101
+    sort: 100
   },
   data() {
     return {
@@ -147,7 +166,7 @@ export default {
         logoImg: null
       },
       dataTxt: "",
-      showMoreBtn:false
+      showMoreBtn: false
     };
   },
   created() {
@@ -174,7 +193,9 @@ export default {
   methods: {
     addItem() {
       this.dataList.splice(0, 0, { text: "", src: "" });
-      //   this.dataList.push({ text: "", src: "" });
+    },
+    delItem(index){
+       this.dataList.splice(index,1)
     },
     addImage(base64) {
       this.form.logoImg = base64;
@@ -185,7 +206,7 @@ export default {
         localStorage.getItem("me_qrcode_list") || "[]"
       ).filter(s => s.text);
       if (this.dataList.length === 0) {
-        this.dataList = [{ text: this.dataTxt, src: '' }];
+        this.dataList = [{ text: this.dataTxt, src: "" }];
       }
       this.form =
         JSON.parse(localStorage.getItem("me_qrcode_form") || "null") ||

@@ -6,7 +6,7 @@
           v-model="beforeTxt"
           placeholder="待处理字符串..."
           class="layui-textarea"
-          rows="15"
+          rows="10"
         ></textarea>
       </div>
       <div class="layui-form-item layui-form-text">
@@ -24,13 +24,15 @@
           v-model="ruleA[index]"
           class="layui-input"
           placeholder="替换字符串/规则"
+          style="width: 40%;float: left;"
         />
-        <span style="height:38px;line-height:38px;">→_→</span>
+        <span style="height:38px;line-height:38px;float:left;">→_→</span>
         <input
           type="text"
           class="layui-input"
           v-model="ruleB[index]"
           placeholder="替换字符串"
+          style="width: 40%;float: left;"
         />
         <i
           class="layui-icon editicon"
@@ -54,7 +56,7 @@
           v-model="afterTxt"
           placeholder="处理后字符串..."
           class="layui-textarea"
-          rows="15"
+          rows="10"
         ></textarea>
       </div>
     </div>
@@ -72,7 +74,7 @@
 export default {
   meta: {
     menuName: "字符串模板替换",
-    sort: 204
+    sort: 30
   },
   data() {
     return {

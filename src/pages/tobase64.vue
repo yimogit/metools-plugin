@@ -38,7 +38,7 @@
 export default {
   meta: {
     menuName: "图片转base64",
-    sort: 203
+    sort: 20
   },
   data() {
     return {

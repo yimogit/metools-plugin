@@ -9,7 +9,7 @@ function getAllPages() {
   const menus = JSON.parse(localStorage.InsertMenus || '[]').map(e => {
     return Object.assign(e, JSON.parse(localStorage.getItem(e.menuUrl)))
   })
-  console.log(menus)
+//   console.log(menus)
   files.keys().forEach(key => {
     var mk = key.replace(/(^\.\/|\.vue$)/g, '')
     var m = files(key)
@@ -35,9 +35,28 @@ function getAllPages() {
       menus.push(customMenu)
     }
   })
-  window.siteMenuItems = menus.sort((a, b) => (a.sort - b.sort > 0 ? 1 : -1))
+  window.siteMenuItems = sortDown(menus,'sort')// menus.sort((a, b) => (a.sort - b.sort > 0 ? 1 : -1))
   return modules
 }
+
+export function sortDown(items, key) {
+    return sort(items, key)
+    function sort(items, key) {
+      items.forEach(item => {
+        if (item.children && item.children.length > 0) {
+          item.children = sort(item.children)
+        }
+      })
+      return items.sort(compareDown(key))
+    }
+    function compareDown(propertyName) {
+      return (obj1, obj2) => {
+        var value1 = Number(obj1[propertyName]) || 0
+        var value2 = Number(obj2[propertyName]) || 0
+        return value2 - value1
+      }
+    }
+  }
 Vue.use(VueRouter)
 const router = new VueRouter({
   mode: 'hash', //history 打包需要使用hash

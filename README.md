@@ -1,37 +1,99 @@
-## 这是什么？
+## 关于 metools
 
-> 这是一个使用 vue.js 构建的纯静态工具,包含多种格式的加密/解密，编码/解密,密码生成器(htpasswd)，二维码生成/识别,百度/有道的英汉互译,md 与 html 互转，模板替换等功能
-> [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools-plugin)
+> 这是一个使用 vue.js 构建的纯静态工具,提供二维码生成/识别,百度/有道的英汉互译等功能  
+> 在线使用：https://metools.js.org  
+> 离线使用：[Chrome 商店下载安装扩展](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie) ，[releases 页下载 crx 手动安装](https://github.com/yimogit/metools-plugin/releases)
 
-### 插件预览
+[![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools-plugin)
 
-在线访问：https://metools.js.org
+## 功能介绍
 
-![图片](https://dn-coding-net-production-pp.qbox.me/89415c80-dae3-46dc-9abe-94fcad9971f1.png)
+### [菜单设置](https://metools.js.org/#/setting)
 
-## 项目如何启动
+![图片](./docs/images/setting.gif)
 
-0.  还原依赖包: `npm install`
-1.  运行：`npm run dev`
-1.  打包：`npm run build` //会自动将 manifest.json 与 logo.png 复制到 dist 目录，dist 目录为插件目录
+### [二维码生成/识别](https://metools.js.org/#/qrcode)
 
-## 插件安装
+![图片](./docs/images/qrcode.gif)
 
-0.  [商店下载](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie)
-1.  [Github 下载](https://github.com/yimogit/metools-plugin/releases/download/v1.0/metools.crx)
-2.  打开 chrome 扩展页：chrome://extensions/
-3.  将扩展拖到浏览器中。。
+功能描述：
 
-## 插件调试
+- 默认获取当前 URL 生成二维码
+- 可以修改前景及填充颜色
+- 可添加 logo 到二维码中心
+- 添加多项并保存数据到 localStorage
 
-0.  你需要一个 chrome 浏览器
-1.  打开扩展列表：[chrome://extensions/](chrome://extensions/)
-1.  启用开发着模式，加载 dist 目录即可
-    ![图片](https://dn-coding-net-production-pp.qbox.me/c2c608ed-90d3-4dbe-98be-e6dc0c68f5c1.png)
-1.  修改后，重新执行`npm run build`，然后重新加载插件即可在右上插件查看效果
-1.  在调用 chrome 的 api 时，以`if (typeof chrome != undefined && chrome.tabs) {}`判断是否为插件模式
-1.  同时可以将此应用部署到 coding 或者 GitHub 使用 pages 服务访问
+### [在线翻译](https://metools.js.org/#/fanyi)
 
-## 插件开发
+![图片](./docs/images/fanyi.gif)
 
-Api 文档：http://open.chrome.360.cn/extension_dev/overview.html
+功能描述：
+
+- 集成 百度翻译、有道翻译，可对比选则宜使用
+- 粘贴/空格触发翻译
+
+### [密码生成器](https://metools.js.org/#/genpwd)
+
+![图片](./docs/images/genpwd.gif)
+
+功能描述：
+
+- 密码生成是获取当前域名作为 key+自己特点标识 ===> 一个固定 8 位数的密码(htpasswd 使用 SHA-1 加密取固定位数)
+- 生成 http 基本认证的密码(htpasswd)
+
+### [在线加密解密](https://metools.js.org/#/encode)
+
+![图片](./docs/images/encrypt.gif)
+
+功能描述：基于 crypto-js 的加密解密实现
+
+- 可逆加密实现：["AES", "DES", "RC4", "Rabbit", "TripleDES", "Base64"]
+- 不可逆加密实现：["MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "HmacSHA1", "HmacSHA224", "HmacSHA256", "HmacSHA384", "HmacSHA512", "HmacMD5"]
+
+### [常用编码转换](https://metools.js.org/#/encode)
+
+![图片](./docs/images/encode.gif)
+
+功能描述：
+
+- 实现编码转换:["utf-8", "ascii", "unicode", "url", "base64", "html"]
+
+### [字符串模板替换](https://metools.js.org/#/strsplit)
+
+![图片](./docs/images/templatesplit.gif)
+
+### 其他功能
+
+- [图片转 Base64](https://metools.js.org/#/tobase64)
+- [数字转人名币](https://metools.js.org/#/rmbconvert)
+- [Markdown 转 Html](https://metools.js.org/#/mdconvert)
+
+## 项目启动/打包
+
+- 还原依赖包: `npm install`
+- 运行：`npm run dev`
+- 打包：`npm run build` //会自动将 manifest.json 与 logo.png 复制到 dist 目录，dist 目录为插件目录
+
+### 路由说明
+
+项目使用 `require.context` 自动加载 `src/pages/*.vue` 生成路由，添加页面直接在 pages 目录新建 vue 文件即可。
+以下为一个示例页面，通过 meta 可设置页面标题，排序,隐藏首页，导航栏隐藏，运行中也可以通过 /setting 覆盖默认设置
+
+```html
+<template></template>
+<script>
+  export default {
+    meta: {
+      menuName: '测试', //导航名称
+      sort: 1, //排序字段 降序
+      indexHide: false, //首页隐藏
+      navHide: false // 下拉导航栏隐藏
+    }
+  }
+</script>
+```
+
+## 相关文档
+
+- Vue 文档：https://cn.vuejs.org/index.html
+- Chrome 插件开发 Api 文档：http://open.chrome.360.cn/extension_dev/overview.html

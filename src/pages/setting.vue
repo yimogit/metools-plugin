@@ -42,7 +42,7 @@ export default {
   meta: {
     navHide: true,
     menuName: '设置',
-    sort: 999
+    sort: 1
   },
   data() {
     return {

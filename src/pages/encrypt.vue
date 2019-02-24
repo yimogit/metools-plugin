@@ -111,7 +111,7 @@ import CryptoJS from "crypto-js";
 export default {
   meta: {
     menuName: "加密/解密",
-    sort: 201
+    sort: 45
   },
   data() {
     return {

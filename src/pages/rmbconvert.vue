@@ -27,7 +27,7 @@ import rmbHelper from '../utils/rmbHelper'
 export default {
   meta: {
     menuName: '人民币转换',
-    sort: 207
+    sort: 30
   },
   data() {
     return {

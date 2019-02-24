@@ -99,7 +99,7 @@ import common from "../utils/common";
 export default {
   meta: {
     menuName: "密码生成器",
-    sort: 202
+    sort: 80
   },
   data() {
     return {

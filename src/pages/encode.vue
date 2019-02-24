@@ -43,7 +43,7 @@ import common from "../utils/common";
 export default {
   meta: {
     menuName: "编码/解码",
-    sort: 202
+    sort: 44
   },
   data() {
     return {

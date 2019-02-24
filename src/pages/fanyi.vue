@@ -42,7 +42,7 @@ import CryptoJS from "crypto-js";
 export default {
   meta: {
     menuName: "在线翻译",
-    sort: 202
+    sort: 90
   },
   data() {
     return {

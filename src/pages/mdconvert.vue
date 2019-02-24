@@ -25,7 +25,7 @@ import toMarkdown from '../utils/tomarkdown'
 export default {
   meta: {
     menuName: 'Markdown/Html互转',
-    sort: 206
+    sort: 20
   },
   data() {
     return {

@@ -12,7 +12,7 @@ export default {
   meta: {
     indexHide: true,
     menuName: '快速导航',
-    sort: -1
+    sort: 1000
   },
   data() {
     return {

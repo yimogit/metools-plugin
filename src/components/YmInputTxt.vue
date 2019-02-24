@@ -1,5 +1,5 @@
 <template>
-  <div class="layui-form-item layui-form-text">
+  <div class="layui-form-item custom-input-txt layui-form-text">
     <textarea
       v-keydown-tab
       v-model="currentValue"
@@ -7,13 +7,13 @@
       :placeholder="placeholder"
       class="layui-textarea"
       :class="areaClass"
-      :row="row"
+      :rows="rows"
     ></textarea>
   </div>
 </template>
 <script>
 export default {
-  props: ["value", "label", "placeholder", "areaClass","row"],
+  props: ["value", "label", "placeholder", "areaClass", "rows"],
   data() {
     return {
       currentValue: this.value
@@ -29,3 +29,8 @@ export default {
   }
 };
 </script>
+<style>
+.custom-input-txt .layui-textarea {
+  min-height: auto;
+}
+</style>
