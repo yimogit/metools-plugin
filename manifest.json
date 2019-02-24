@@ -3,7 +3,7 @@
   "version": "1.5.0",
   "manifest_version": 2,
   "description":
-    "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解码，二维码生成/识别,密码生成器，百度/有道的英汉互译,md与html互转，模板替换等功能，开源免费：https://github.com/yimogit/metools-plugin",
+    "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解码，二维码生成/识别,密码生成器，百度/有道的英汉互译,md与html互转，模板替换等功能",
   "homepage_url": "http:///tools.yimo.link/",
   "icons": {
     "16": "static/logo/16.png",
