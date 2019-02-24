@@ -1,9 +1,9 @@
 {
-  "name": "MeTools",
-  "version": "1.4.4",
+  "name": "metools",
+  "version": "1.5.0",
   "manifest_version": 2,
   "description":
-    "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解密，二维码生成/识别,百度/有道的英汉互译,md与html互转，模板替换等功能",
+    "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解码，二维码生成/识别,密码生成器，百度/有道的英汉互译,md与html互转，模板替换等功能，开源免费：https://github.com/yimogit/metools-plugin",
   "homepage_url": "http:///tools.yimo.link/",
   "icons": {
     "16": "static/logo/16.png",
@@ -11,7 +11,7 @@
     "128": "static/logo/128.png"
   },
   "browser_action": {
-    "default_title": "MeTools",
+    "default_title": "metools",
     "default_icon": "static/logo/128.png",
     "default_popup": "index.html"
   },
