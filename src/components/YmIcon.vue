@@ -9,6 +9,9 @@
     <template v-if="icon=='delete'">
       &#xe640;
     </template>
+    <template v-if="icon=='right'">
+      &#xe602;
+    </template>
   </i>
 </template>
 

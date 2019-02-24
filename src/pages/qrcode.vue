@@ -1,7 +1,12 @@
 <template>
   <v-tab :items="tabItems">
     <div slot="generatecode">
-      <div class="layui-form-item layui-form-text">
+      <div class="layui-form-item" >
+        <v-button @click="addItem">添加新项</v-button>
+        <v-button @click="saveData">保存数据</v-button>
+        <v-button @click="s=>showMoreBtn=!showMoreBtn" :icon="showMoreBtn?'right':'down'">更多</v-button>
+      </div>
+      <div class="layui-form-item layui-form-text" v-if="showMoreBtn">
         <label style="float:left">
           <span style="float:left;line-height:38px;">背景色:</span>
           <input
@@ -23,8 +28,7 @@
           />
         </label>
       </div>
-      <div class="layui-form-item ">
-        <v-button @click="saveData">保存数据</v-button>
+      <div class="layui-form-item " v-if="showMoreBtn">
         <v-upload
           @before="addImage"
           :beforeShow="true"
@@ -47,9 +51,6 @@
         >
           <i class="layui-icon">&#xe640;</i>
         </button>
-      </div>
-      <div class="layui-form-item">
-        <v-button @click="addItem">添加新项</v-button>
       </div>
       <fieldset
         class="layui-elem-field"
@@ -145,7 +146,8 @@ export default {
         bgcolor: "#ffffff",
         logoImg: null
       },
-      dataTxt: ""
+      dataTxt: "",
+      showMoreBtn:false
     };
   },
   created() {

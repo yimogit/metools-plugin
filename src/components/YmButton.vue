@@ -1,7 +1,7 @@
 <template>
     <button class="layui-btn" @click="clickHandler">
-        <v-icon v-if="icon" :icon="icon" />
         <slot></slot>
+        <v-icon v-if="icon" :icon="icon" />
     </button>
 </template>
 
