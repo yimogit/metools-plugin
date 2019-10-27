@@ -27,7 +27,9 @@ mkdir('-p', assetsPath)
 cp('-R', 'static/*', assetsPath)
 cp('-R', 'manifest.json', config.build.assetsRoot)
 cp('-R', 'CNAME', config.build.assetsRoot)
-
+var backgroundDir=path.resolve(config.build.assetsRoot,'./background/')
+mkdir(backgroundDir)
+cp('-R', 'background/*',backgroundDir)
 webpack(webpackConfig, function(err, stats) {
   spinner.stop()
   if (err) throw err

@@ -1,12 +1,18 @@
 ## 关于 metools
 
-> 这是一个使用 vue.js 构建的纯静态工具,提供二维码生成/识别,百度/有道的英汉互译等功能  
-> 在线使用：https://metools.js.org  
-> 离线使用：[Chrome 商店下载安装扩展](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie) ，[releases 页下载 crx 手动安装](https://github.com/yimogit/metools-plugin/releases)
+> 这是一个使用 vue.js 构建的纯静态工具,提供二维码生成/识别(可离线使用)等日常小工具，现已添加右键可识别网页中的二维码，生成当前页面/选中链接二维码，翻译选中文字等功能，欢迎使用。    
+> 另外还可以根据需要启用菜单，自定义导航链接，可离线使用,觉的好用的记得 Star   
+> 在线使用：https://metools.js.org    
+> 离线使用：克隆/下载 gh-pages 代码到本地，使用开发模式自行打包扩展或直接收藏书签使用   
+> 扩展下载：[Chrome 商店下载安装扩展](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie) ，[releases 页下载 crx 手动安装](https://github.com/yimogit/metools-plugin/releases)  
 
 [![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools-plugin)
 
 ## 功能介绍
+
+### ★ 2019-10-27 新增添加网页菜单（快捷翻译，二维码生成&识别）
+
+![图片](./docs/images/menu.gif)
 
 ### [菜单设置](https://metools.js.org/#/setting)
 

@@ -1,9 +1,8 @@
 {
   "name": "metools",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "manifest_version": 2,
-  "description":
-    "一个使用vue.js构建的纯静态工具,包含多种格式的加密/解密，编码/解码，二维码生成/识别,密码生成器，百度/有道的英汉互译,md与html互转，模板替换等功能",
+  "description": "一个简单易用的工具集，包含常用的二维码生成&识别，英汉互译，密码生成器，能够自定义功能菜单，默认功能还包含有字符串的加密/解密，编码/解码，模板替换等功能",
   "homepage_url": "https://github.com/yimogit/metools-plugin",
   "icons": {
     "16": "static/logo/16.png",
@@ -19,5 +18,17 @@
     "keyword": "metools"
   },
   "offline_enabled": true,
-  "permissions": ["tabs", "webRequest", "storage", "http://*/*", "https://*/*"]
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "contextMenus",
+    "storage",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": [
+      "background/menu.js"
+    ]
+  }
 }

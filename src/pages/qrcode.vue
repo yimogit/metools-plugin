@@ -171,8 +171,15 @@ export default {
   },
   created() {
     let self = this;
+    var url = this.$route.query.url;
     window.webqr = webqr;
-    if (typeof chrome != undefined && chrome.tabs) {
+    if (this.$route.query.type === "decode") {
+      this.tabItems = this.tabItems.reverse();
+    }
+    if (url) {
+      self.dataTxt = decodeURIComponent(this.$route.query.url);
+      self.loadData();
+    } else if (typeof chrome != undefined && chrome.tabs) {
       chrome.tabs.getSelected(function(tab) {
         self.dataTxt = tab.url;
         self.loadData();
@@ -186,16 +193,19 @@ export default {
         // console.log(this.files);
         webqr.handleFiles(this.files);
       });
-      this.selectDecode();
       this.pasteInit();
+      this.selectDecode();
+      if (this.$route.query.type === "decode" && url) {
+        this.loadQrImg(url);
+      }
     });
   },
   methods: {
     addItem() {
       this.dataList.splice(0, 0, { text: "", src: "" });
     },
-    delItem(index){
-       this.dataList.splice(index,1)
+    delItem(index) {
+      this.dataList.splice(index, 1);
     },
     addImage(base64) {
       this.form.logoImg = base64;
@@ -230,10 +240,10 @@ export default {
         var image = QrCodeWithLogo.toImage({
           image: document.getElementById("custom-img-" + (list.length - index)), // 换成你的canvas节点
           content: item.text,
-          width: 256,
-          logo: _this.form.logoImg && {
-            src: _this.form.logoImg
-          },
+          width: 200,
+          // logo: _this.form.logoImg && {
+          //   src: _this.form.logoImg
+          // },
           nodeQrCodeOptions: {
             color: {
               dark: _this.form.color,
@@ -264,6 +274,16 @@ export default {
           }
         }
       });
+    },
+    loadQrImg(url) {
+      fetch(url, {
+        method: "get",
+        responseType: "blob"
+      })
+        .then(res => res.blob())
+        .then(u => {
+          webqr.handleFiles([u]);
+        });
     }
   }
 };

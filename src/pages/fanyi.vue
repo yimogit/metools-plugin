@@ -115,7 +115,7 @@ export default {
         type: "data",
         doctype: "jsonp",
         version: 1.1,
-        q: str
+        q: str.trim()
       };
       if (typeof chrome != undefined && chrome.tabs) {
         data.doctype = "json";
@@ -175,10 +175,10 @@ export default {
         self.model.beforeTxt = "";
         return;
       }
-      var appid = "20170416000044969";
-      var key = "X1ZMBUNuENgb7pzMVrpA";
+      var appid =localStorage.CUSTOM_BAIDU_FANYI_APPID || "20170416000044969";
+      var key = localStorage.CUSTOM_BAIDU_FANYI_KEY ||"X1ZMBUNuENgb7pzMVrpA";
       var salt = new Date().getTime();
-      var query = self.model.beforeTxt;
+      var query = self.model.beforeTxt.trim();
       // 多个query可以用\n连接  如 query='apple\norange\nbanana\npear'
       var from = "auto";
       var to = "auto";
@@ -208,6 +208,11 @@ export default {
         dataType: "jsonp",
         data: data,
         success: function(resp) {
+          if(!resp.trans_result){
+            self.model.afterTxt = "翻译失败~~~";
+            self.model.jsonData = JSON.stringify(data);
+            return
+          }
           self.model.afterTxt = "";
           resp.trans_result.forEach(item => {
             self.model.afterTxt += item.dst + "\n";
