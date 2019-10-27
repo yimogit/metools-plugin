@@ -1,0 +1,34 @@
+{
+  "name": "metools",
+  "version": "1.6.0",
+  "manifest_version": 2,
+  "description": "一个简单易用的工具集，包含常用的二维码生成&识别，英汉互译，密码生成器，能够自定义功能菜单，默认功能还包含有字符串的加密/解密，编码/解码，模板替换等功能",
+  "homepage_url": "https://github.com/yimogit/metools-plugin",
+  "icons": {
+    "16": "static/logo/16.png",
+    "48": "static/logo/48.png",
+    "128": "static/logo/128.png"
+  },
+  "browser_action": {
+    "default_title": "metools",
+    "default_icon": "static/logo/128.png",
+    "default_popup": "index.html"
+  },
+  "omnibox": {
+    "keyword": "metools"
+  },
+  "offline_enabled": true,
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "contextMenus",
+    "storage",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": [
+      "background/menu.js"
+    ]
+  }
+}
