@@ -68,6 +68,12 @@
 
 ![图片](./docs/images/templatesplit.gif)
 
+### [双重验证/谷歌验证器](https://metools.js.org/#/twostepvalidation)
+
+![图片](./docs/images/twostepvalidation.jpg)
+
+
+
 ### 其他功能
 
 - [图片转 Base64](https://metools.js.org/#/tobase64)

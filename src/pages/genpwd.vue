@@ -38,7 +38,6 @@
 
         <div
           class="well"
-          style="font-family: 微软雅黑, Verdana, sans-serif, 宋体;"
         >
           参考：http://tool.oschina.net/htpasswd
           <h4>什么是 htpasswd ?</h4>
