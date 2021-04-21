@@ -72,6 +72,10 @@
 
 ![图片](./docs/images/twostepvalidation.jpg)
 
+### [非人语言转换](https://metools.js.org/#/gossip)
+
+![图片](./docs/images/gossip.png)
+
 
 
 ### 其他功能
@@ -79,6 +83,7 @@
 - [图片转 Base64](https://metools.js.org/#/tobase64)
 - [数字转人名币](https://metools.js.org/#/rmbconvert)
 - [Markdown 转 Html](https://metools.js.org/#/mdconvert)
+- [人类语言 转 非人类语言](https://metools.js.org/#/gossip)
 
 ## 项目启动/打包
 
