@@ -5,13 +5,13 @@
         <input v-model="beforeTxt" placeholder="人类语言" class="layui-input" />
       </div>
       <div class="layui-form-item layui-form-text">
-        <button style="border: 0;">
+        <div style="border: 0;width: 30%;display: inline-block;line-height: 38px;">
           <input
             v-model="replaceTxt"
             placeholder="非人语"
             class="layui-input"
           />
-        </button>
+        </div>
         <v-button @click="convertGossip()">
           <span
             >流言蜚语
