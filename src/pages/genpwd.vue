@@ -2,93 +2,52 @@
   <v-tab :items="tabItems">
     <div slot="htpasswd">
       <div class="layui-form-item layui-form-text">
-        <input
-          v-model="model.userName"
-          placeholder="用户名"
-          class="layui-input"
-          @keyup="genHtpasswd"
-        />
+        <input v-model="model.userName" placeholder="用户名" class="layui-input" @keyup="genHtpasswd" />
       </div>
       <div class="layui-form-item layui-form-text">
-        <input
-          v-model="model.userPwd"
-          placeholder="密码"
-          class="layui-input"
-          @keyup="genHtpasswd"
-        />
+        <input v-model="model.userPwd" placeholder="密码" class="layui-input" @keyup="genHtpasswd" />
       </div>
       <div class="layui-form-item layui-form-text">
         <!-- <v-select
           v-model="currentHtpasswdType"
           :options="htpasswdOptions"
         ></v-select> -->
-        <v-radio
-          v-model="currentHtpasswdType"
-          :options="htpasswdOptions"
-          :optionsVal="htpasswdOptions.map(s=>s.Value)"
-        ></v-radio>
+        <v-radio v-model="currentHtpasswdType" :options="htpasswdOptions"
+          :optionsVal="htpasswdOptions.map(s => s.Value)"></v-radio>
       </div>
       <div class="layui-form-item layui-form-text">
-        <textarea
-          v-model="model.afterTxt"
-          rows="3"
-          placeholder="生成结果..."
-          class="layui-textarea "
-        ></textarea>
+        <textarea v-model="model.afterTxt" rows="3" placeholder="生成结果..." class="layui-textarea "></textarea>
 
-        <div
-          class="well"
-        >
+        <div class="well">
           参考：http://tool.oschina.net/htpasswd
           <h4>什么是 htpasswd ?</h4>
-          <p>htpasswd 是开源 http 服务器 <a
-              href="http://www.oschina.net/p/apache+http+server"
-              target="_blank"
-            >apache httpd</a> 的一个命令工具，用于生成 http 基本认证的密码文件。</p>
+          <p>htpasswd 是开源 http 服务器 <a href="http://www.oschina.net/p/apache+http+server" target="_blank">apache httpd</a>
+            的一个命令工具，用于生成 http 基本认证的密码文件。</p>
           <h4>加密方式有什么区别？</h4>
           <p><strong>MD5:</strong>使用MD5加密密码。在Windows, Netware 和TPF上，这是默认的加密方式。</p>
-          <p><strong>crypt:</strong>使用crypt()加密密码。在除了Windows, Netware和TPF的平台上，这是默认的。 虽然它在所有平台上可以为htpasswd所支持， 但是在Windows, Netware和TPF上不能为httpd服务器所支持。</p>
+          <p><strong>crypt:</strong>使用crypt()加密密码。在除了Windows, Netware和TPF的平台上，这是默认的。 虽然它在所有平台上可以为htpasswd所支持， 但是在Windows,
+            Netware和TPF上不能为httpd服务器所支持。</p>
           <p><strong>SHA:</strong>使用SHA加密密码。 它是为了方便转入或移植到使用LDAP Directory Interchange Format (ldif)的Netscape而设计的。</p>
-          <p><strong>plain:</strong>不加密，使用纯文本的密码。虽然在所有平台上 htpasswd 都可以建立这样的密码， 但是httpd后台只在Windows, Netware和TPF上支持纯文本的密码。</p>
+          <p><strong>plain:</strong>不加密，使用纯文本的密码。虽然在所有平台上 htpasswd 都可以建立这样的密码， 但是httpd后台只在Windows, Netware和TPF上支持纯文本的密码。
+          </p>
         </div>
       </div>
     </div>
     <div slot="sitepwd">
       <div class="layui-form-item layui-form-text">
-        <input
-          v-model="model.domainName"
-          placeholder="网站根域名"
-          class="layui-input"
-          @keyup="genSitePwd"
-        />
+        <input v-model="model.domainName" placeholder="网站根域名" class="layui-input" @keyup="genSitePwd" />
       </div>
       <div class="layui-form-item layui-form-text">
-        <input
-          v-model="model.domainKey"
-          placeholder="网站用户名/Key"
-          class="layui-input"
-          @keyup="genSitePwd"
-        />
+        <input v-model="model.domainKey" placeholder="网站用户名/Key" class="layui-input" @keyup="genSitePwd" />
       </div>
       <div class="layui-form-item layui-form-text">
-        <v-button
-          icon="down"
-          @click="genSitePwd"
-        >生成密码</v-button>
+        <v-button icon="down" @click="genSitePwd">生成密码</v-button>
       </div>
       <div class="layui-form-item layui-form-text">
-        <textarea
-          v-model="model.genPwdResult"
-          rows="3"
-          placeholder="生成密码..."
-          class="layui-textarea "
-        ></textarea>
+        <textarea v-model="model.genPwdResult" rows="3" placeholder="生成密码..." class="layui-textarea "></textarea>
       </div>
       <div>
-        浏览器访问地址：<a
-          href="https://metools.js.org/#/genpwd"
-          target="_blank"
-        >https://metools.js.org/#/genpwd</a>
+        浏览器访问地址：<a href="https://metools.js.org/#/genpwd" target="_blank">https://metools.js.org/#/genpwd</a>
       </div>
     </div>
   </v-tab>
@@ -147,7 +106,8 @@ export default {
       this.tabItems = this.tabItems.reverse();
     }
     if (typeof chrome != undefined && chrome.tabs) {
-      chrome.tabs.getSelected(function(tab) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        var tab = tabs[0];
         _this.model.domainName = _this.getDomain(tab.url);
       });
     } else {
@@ -344,10 +304,10 @@ export default {
         return t < 20
           ? 1518500249
           : t < 40
-          ? 1859775393
-          : t < 60
-          ? -1894007588
-          : -899497514;
+            ? 1859775393
+            : t < 60
+              ? -1894007588
+              : -899497514;
       }
 
       /*
@@ -560,7 +520,7 @@ export default {
               this.skb[1][((c >>> 6) & 0x03) | ((c >>> 7) & 0x3c)] |
               this.skb[2][((c >>> 13) & 0x0f) | ((c >>> 14) & 0x30)] |
               this.skb[3][
-                ((c >>> 20) & 0x01) | ((c >>> 21) & 0x06) | ((c >>> 22) & 0x38)
+              ((c >>> 20) & 0x01) | ((c >>> 21) & 0x06) | ((c >>> 22) & 0x38)
               ];
             t =
               this.skb[4][d & 0x3f] |

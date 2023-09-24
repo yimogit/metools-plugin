@@ -4,7 +4,8 @@
       <div class="layui-form-item">
         <label class="layui-form-label">输入框</label>
         <div class="layui-input-block">
-          <input type="text" name="title" required lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+          <input type="text" name="title" required lay-verify="required" placeholder="请输入标题" autocomplete="off"
+            class="layui-input">
         </div>
       </div>
     </div>
@@ -27,11 +28,38 @@
         <v-checkbox v-model="selectMenu.navHide" text="导航隐藏" />
       </div>
       <div class="layui-form-item layui-form-text" v-if="selectValue">
-        <v-button @click="saveSetting">保存设置</v-button>
+        <v-button @click="saveSetting">保存菜单</v-button>
         <v-button @click="removeCustomMenu" v-if="selectMenu.custom">删除</v-button>
       </div>
       <div class="layui-form-item layui-form-text" v-else>
         <v-button @click="addCustomMenu">添加菜单</v-button>
+      </div>
+    </div>
+    <div slot="fanyi">
+      <fieldset class="layui-elem-field">
+        <legend>百度</legend>
+        <div class="layui-field-box">
+          <div class="layui-form-item layui-form-text">
+            <input type="text" v-model="fanyiConfig.baiduAppId" placeholder="百度APPID" class="layui-input">
+          </div>
+          <div class="layui-form-item layui-form-text">
+            <input type="text" v-model="fanyiConfig.baiduAppKey" placeholder="百度密钥" class="layui-input">
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="layui-elem-field">
+        <legend>有道</legend>
+        <div class="layui-field-box">
+          <div class="layui-form-item layui-form-text">
+            <input type="text" v-model="fanyiConfig.youdaoAppId" placeholder="有道应用ID" class="layui-input">
+          </div>
+          <div class="layui-form-item layui-form-text">
+            <input type="text" v-model="fanyiConfig.youdaoAppKey" placeholder="有道密钥" class="layui-input">
+          </div>
+        </div>
+      </fieldset>
+      <div class="layui-form-item layui-form-text">
+        <v-button @click="saveFanyiConfig">保存配置</v-button>
       </div>
     </div>
   </v-tab>
@@ -50,16 +78,27 @@ export default {
         {
           Title: '菜单设置',
           Name: 'menus'
+        },
+        {
+          Title: '翻译设置',
+          Name: 'fanyi'
         }
       ],
       setting: localStorage.CustomSetting || {},
       menus: [],
       selectValue: null,
       menuOptions: [],
-      selectMenu: {}
+      selectMenu: {},
+      fanyiConfig: {
+        // baiduAppId: '',
+        // baiduAppKey: '',
+        // youdaoAppId: '',
+        // youdaoAppKey: '',
+      }
     }
   },
   created() {
+    this.fanyiConfig = JSON.parse(localStorage.getItem('fanyi_config') || 'null') || this.fanyiConfig
     this.menus = window.siteMenuItems
     this.menuOptions = window.siteMenuItems.map(e => {
       return {
@@ -118,10 +157,18 @@ export default {
     },
     reload() {
       location.reload()
+    },
+    saveFanyiConfig() {
+      // console.log(this.fanyiConfig)
+      //移除空值
+      localStorage.setItem('fanyi_config', JSON.stringify(this.fanyiConfig, (key, value) => {
+        if (value !== null && value !== undefined && value !== "") {
+          return value;
+        }
+      }))
     }
   }
 }
 </script>
 
-<style>
-</style>
+<style></style>

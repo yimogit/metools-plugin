@@ -17,6 +17,10 @@ export default {
         obj.send(null);
     },
     SendPostRequest(url, data, successCallback) {
+        var query = ''
+        Object.keys(data).forEach(e => {
+            query += e + "=" + data[e] + "&";
+        });
         var obj = new XMLHttpRequest();
         obj.open("POST", url, true);
         obj.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); // 发送信息至服务器时内容编码类型
@@ -25,7 +29,7 @@ export default {
                 successCallback.call(this, obj.responseText);
             }
         };
-        obj.send(data);
+        obj.send(query);
     },
     execJsonp(src) {
         var script = document.createElement("script");
@@ -39,7 +43,7 @@ export default {
         return '';
     },
     getProtocol() {
-        return location.protocol == 'https:' ? 'https' : 'http';
+        return location.protocol == 'http:' ? 'http' : 'https';
     },
     toUbb(str) {
         str = str.replace(/</ig, '&lt;');

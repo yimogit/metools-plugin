@@ -1,13 +1,16 @@
 var contexts = ["page", "selection", "link", "editable", "image", "video", "audio"];
 //310
-var genId = chrome.contextMenus.create({ "title": '生成二维码', contexts: ['link', 'page'], "onclick": genericOnClick });
-var sbId = chrome.contextMenus.create({ "title": '识别二维码', contexts: ['image'], "onclick": genericOnClick });
-var fanyiId = chrome.contextMenus.create({ "title": '翻译选中文字', contexts: ['selection'], "onclick": genericOnClick });
+var genId = 'scewm';
+chrome.contextMenus.create({ id: genId, "title": '生成二维码', contexts: ['link', 'page'] });
+var sbId = 'sbewm';
+chrome.contextMenus.create({ id: sbId, "title": '识别二维码', contexts: ['image'] });
+var fanyiId = 'fyxzwz';
+chrome.contextMenus.create({ id: fanyiId, "title": '翻译选中文字', contexts: ['selection'] });
 
 function genericOnClick(info, tab) {
   var url = ''
   if (info.menuItemId === fanyiId && info.selectionText) {
-    url = (localStorage.CUSTOM_FANYIAPI_URL || 'https://fanyi.baidu.com/#auto/zh/') + info.selectionText;
+    url = ('https://fanyi.baidu.com/#auto/zh/') + info.selectionText;
   }
   else if (info.menuItemId === genId) {
     var linkUrl = info.linkUrl || info.pageUrl
@@ -18,7 +21,9 @@ function genericOnClick(info, tab) {
     url = 'chrome-extension://' + chrome.runtime.id + '/index.html#/qrcode?type=decode&url=' + encodeURIComponent(info.srcUrl)
   }
   if (url) {
-    window.open(url, '_blank');
+    chrome.tabs.create({ url: url });
   }
 
 }
+
+chrome.contextMenus.onClicked.addListener(genericOnClick)
