@@ -6,9 +6,17 @@
 > 离线使用：克隆/下载 gh-pages 代码到本地，使用开发模式自行打包扩展或直接收藏书签使用   
 > 扩展下载：[Chrome 商店下载安装扩展](https://chrome.google.com/webstore/detail/metools/gpmjnakadlflmpekiimgbflnkmkncjie) ，[releases 页下载 crx 手动安装](https://github.com/yimogit/metools-plugin/releases)  
 
-[![Build Status](https://travis-ci.org/yimogit/metools.svg?branch=master)](https://travis-ci.org/yimogit/metools-plugin)
 
 ## 功能介绍
+
+
+### ★ 2023-09-25 新增翻译配置
+可自行前往[百度翻译开放平台](https://fanyi-api.baidu.com/manage/developer)、[有道智云平台](https://ai.youdao.com/console/#/service-singleton/text-translation) 申请应用配置
+
+![图片](./docs/images/setting-fanyi.png)
+
+### ★ 2023-09-25 新增JSON格式化
+![图片](./docs/images/format-json.png)
 
 ### ★ 2019-10-27 新增添加网页菜单（快捷翻译，二维码生成&识别）
 
