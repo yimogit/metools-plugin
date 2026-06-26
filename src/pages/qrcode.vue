@@ -114,7 +114,7 @@ export default {
     if (url) {
       self.dataTxt = decodeURIComponent(this.$route.query.url);
       self.loadData();
-    } else if (typeof chrome != undefined && chrome.tabs) {
+    } else if (common.isChromeExtension() && chrome.tabs) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         var tab = tabs[0];
         self.dataTxt = tab.url;

@@ -105,7 +105,7 @@ export default {
     if (_this.$route.query.type === 'htpasswd') {
       this.tabItems = this.tabItems.reverse();
     }
-    if (typeof chrome != undefined && chrome.tabs) {
+    if (common.isChromeExtension() && chrome.tabs) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         var tab = tabs[0];
         _this.model.domainName = _this.getDomain(tab.url);

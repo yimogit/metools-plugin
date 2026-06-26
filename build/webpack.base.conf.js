@@ -2,6 +2,7 @@ var path = require('path')
 var config = require('../config')
 var utils = require('./utils')
 var projectRoot = path.resolve(__dirname, '../')
+var apacheMd5Path = path.resolve(projectRoot, 'node_modules/apache-md5')
 
 var env = process.env.NODE_ENV
 // check env & config/index.js to decide weither to enable CSS Sourcemaps for the
@@ -42,8 +43,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel',
-        include: projectRoot,
-        exclude: /node_modules/
+        include: [projectRoot, apacheMd5Path],
+        exclude: function (modulePath) {
+          return /node_modules/.test(modulePath) && modulePath.indexOf(apacheMd5Path) !== 0
+        }
       },
       {
         test: /\.json$/,

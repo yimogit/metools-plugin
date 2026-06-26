@@ -116,7 +116,7 @@ export default {
         signType: 'v3',
         curtime: curtime,
       }
-      if (typeof chrome != undefined && chrome.tabs) {
+      if (common.isChromeExtension()) {
         common.SendPostRequest(api, data, function (text) {
           var resp = JSON.parse(text)
           if (resp.errorCode == 0) {
@@ -189,7 +189,7 @@ export default {
         to: to,
         sign: sign,
       }
-      if (typeof chrome != undefined && chrome.tabs) {
+      if (common.isChromeExtension()) {
         common.SendGetRequest(url, data, function (text) {
           self.model.afterTxt = ''
           JSON.parse(text).trans_result.forEach((item) => {

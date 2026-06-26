@@ -23,16 +23,13 @@
   },
   "permissions": [
     "activeTab",
-    "tabs",
-    "webRequest",
     "contextMenus",
     "storage"
   ],
   "host_permissions": [
-    "http://*.youdao.com/",
-    "https://*.youdao.com/",
-    "http://*.baidu.com/",
-    "https://*.baidu.com/"
+    "https://openapi.youdao.com/*",
+    "http://api.fanyi.baidu.com/*",
+    "https://fanyi-api.baidu.com/*"
   ],
   "background": {
     "service_worker": "background/menu.js"
