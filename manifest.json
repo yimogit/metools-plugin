@@ -2,6 +2,7 @@
   "name": "metools",
   "version": "1.9.1",
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Rsyjwv3bqC/7XaosEtYNiIpkATuuOMmVr8TgjdUx5Yqsp7OSx/vhTwJki56DGN+MSVjDTjrPzvju6Ckdy36wZJEaLbjryiVlHMEvUZP1LVDV9dN5BSXrGz3tDqo661Njd5HOqSWVwVyglBqmr0BlSRPCN8DLrvzWtIfm0gPpGwXHkX8zn7/wykUL9iNJKaTWfQEedWK7pZc1H0966oJh4uCFeT7yzrVFMxJe4N/aybE2RuspiqEQ2Os99KQHCm3Q64VgGYyTbl1QYWHubXykgjfEcF9pgvDH9u4rqnV2er7mHPiIo5duJ8kkhLooLpYMFHyd/Vg5n5FhMlDzdU3xwIDAQAB",
   "description": "一个简单易用的工具集，包含常用的二维码生成&识别，英汉互译，密码生成器,双重验证(谷歌验证器)，能够自定义功能菜单，默认功能还包含有字符串的加密/解密，编码/解码，模板替换等功能",
   "homepage_url": "https://github.com/yimogit/metools-plugin",
   "action": {
