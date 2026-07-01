@@ -24,8 +24,7 @@
   },
   "permissions": [
     "activeTab",
-    "contextMenus",
-    "storage"
+    "contextMenus"
   ],
   "host_permissions": [
     "https://openapi.youdao.com/*",
