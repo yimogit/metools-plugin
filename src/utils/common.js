@@ -1,11 +1,14 @@
 import config from 'config'
 import cacheHelper from './cacheHelper'
 export default {
+    isChromeExtension() {
+        return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+    },
     SendGetRequest(url, data, successCallback) {
         var obj = new XMLHttpRequest();  // XMLHttpRequest对象用于在后台与服务器交换数据         
         var query = url.indexOf('?') > 0 ? "" : "?";
         Object.keys(data).forEach(e => {
-            query += e + "=" + data[e] + "&";
+            query += encodeURIComponent(e) + "=" + encodeURIComponent(data[e]) + "&";
         });
         url = url + query;
         obj.open('GET', url, true);
@@ -19,7 +22,7 @@ export default {
     SendPostRequest(url, data, successCallback) {
         var query = ''
         Object.keys(data).forEach(e => {
-            query += e + "=" + data[e] + "&";
+            query += encodeURIComponent(e) + "=" + encodeURIComponent(data[e]) + "&";
         });
         var obj = new XMLHttpRequest();
         obj.open("POST", url, true);
@@ -30,12 +33,6 @@ export default {
             }
         };
         obj.send(query);
-    },
-    execJsonp(src) {
-        var script = document.createElement("script");
-        script.setAttribute("type", "text/javascript");
-        script.src = src;
-        document.body.appendChild(script);
     },
     trim(str) {
         if (str)
@@ -97,25 +94,5 @@ export default {
         str = str.replace(/&lt;/ig, '<');
         str = str.replace(/&gt;/ig, '>');
         return str;
-    },
-    /**
-     * 动态加载JS
-     * @param {string} url 脚本地址
-     * @param {function} callback  回调函数
-     */
-    dynamicLoadJs(url, callback) {
-        var head = document.getElementsByTagName('head')[0];
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = url;
-        if (typeof (callback) == 'function') {
-            script.onload = script.onreadystatechange = function () {
-                if (!this.readyState || this.readyState === "loaded" || this.readyState === "complete") {
-                    callback();
-                    script.onload = script.onreadystatechange = null;
-                }
-            };
-        }
-        head.appendChild(script);
     }
 }
