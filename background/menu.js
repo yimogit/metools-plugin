@@ -1,29 +1,56 @@
-var contexts = ["page", "selection", "link", "editable", "image", "video", "audio"];
-//310
-var genId = 'scewm';
-chrome.contextMenus.create({ id: genId, "title": '生成二维码', contexts: ['link', 'page'] });
-var sbId = 'sbewm';
-chrome.contextMenus.create({ id: sbId, "title": '识别二维码', contexts: ['image'] });
-var fanyiId = 'fyxzwz';
-chrome.contextMenus.create({ id: fanyiId, "title": '翻译选中文字', contexts: ['selection'] });
+var MENU_IDS = {
+  qrcodeGenerate: 'scewm',
+  qrcodeDecode: 'sbewm',
+  translateSelection: 'fyxzwz'
+};
 
-function genericOnClick(info, tab) {
-  var url = ''
-  if (info.menuItemId === fanyiId && info.selectionText) {
-    url = ('https://fanyi.baidu.com/#auto/zh/') + info.selectionText;
+var MENU_ITEMS = [
+  {
+    id: MENU_IDS.qrcodeGenerate,
+    title: '生成二维码',
+    contexts: ['link', 'page']
+  },
+  {
+    id: MENU_IDS.qrcodeDecode,
+    title: '识别二维码',
+    contexts: ['image']
+  },
+  {
+    id: MENU_IDS.translateSelection,
+    title: '翻译选中文字',
+    contexts: ['selection']
   }
-  else if (info.menuItemId === genId) {
-    var linkUrl = info.linkUrl || info.pageUrl
-    //生成二维码
-    url = 'chrome-extension://' + chrome.runtime.id + '/index.html#/qrcode?url=' + encodeURIComponent(linkUrl)
+];
+
+function createContextMenus() {
+  chrome.contextMenus.removeAll(function () {
+    MENU_ITEMS.forEach(function (item) {
+      chrome.contextMenus.create(item);
+    });
+  });
+}
+
+function getExtensionUrl(path) {
+  return chrome.runtime.getURL(path);
+}
+
+function handleContextMenuClick(info) {
+  var url = '';
+
+  if (info.menuItemId === MENU_IDS.translateSelection && info.selectionText) {
+    url = 'https://fanyi.baidu.com/#auto/zh/' + encodeURIComponent(info.selectionText);
+  } else if (info.menuItemId === MENU_IDS.qrcodeGenerate) {
+    var linkUrl = info.linkUrl || info.pageUrl;
+    url = getExtensionUrl('index.html#/qrcode?url=' + encodeURIComponent(linkUrl));
+  } else if (info.menuItemId === MENU_IDS.qrcodeDecode && info.mediaType === 'image') {
+    url = getExtensionUrl('index.html#/qrcode?type=decode&url=' + encodeURIComponent(info.srcUrl));
   }
-  else if (info.menuItemId === sbId && ['image'].indexOf(info.mediaType) > -1) {
-    url = 'chrome-extension://' + chrome.runtime.id + '/index.html#/qrcode?type=decode&url=' + encodeURIComponent(info.srcUrl)
-  }
+
   if (url) {
     chrome.tabs.create({ url: url });
   }
-
 }
 
-chrome.contextMenus.onClicked.addListener(genericOnClick)
+chrome.runtime.onInstalled.addListener(createContextMenus);
+chrome.runtime.onStartup.addListener(createContextMenus);
+chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
