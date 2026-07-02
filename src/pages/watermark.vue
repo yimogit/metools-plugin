@@ -11,20 +11,20 @@
 
       <div class="layui-form-item" style="padding:5px;">
         <span style="line-height:38px;margin-right:10px;">文字</span>
-        <input v-model="watermarkText" @input="renderWatermark" placeholder="请输入水印文字" class="layui-input" style="width:160px;display:inline-block;" />
+        <input v-model="watermarkText" @input="onSettingChange" placeholder="水印文字" class="layui-input" style="width:160px;display:inline-block;" />
         <span style="margin-left:10px;line-height:38px;">模式</span>
-        <v-radio v-model="mode" :options="modeOptions" :optionsVal="['center', 'tile']" style="display:inline-block;"></v-radio>
+        <v-select v-model="mode" :options="modeOptions" @change="onSettingChange" style="width:100px;display:inline-block;"></v-select>
         <span style="margin-left:10px;line-height:38px;">字号</span>
-        <input v-model.number="fontSize" @input="renderWatermark" type="number" min="8" :max="autoFontSize * 3 || 200" :placeholder="autoFontSize" class="layui-input" style="width:70px;display:inline-block;" />
+        <input v-model.number="fontSize" @input="onSettingChange" type="number" min="8" max="600" class="layui-input" style="width:70px;display:inline-block;" />
         <span style="line-height:38px;color:#999;">px</span>
       </div>
 
       <div class="layui-form-item" style="padding:5px;">
         <span style="line-height:38px;">透明度</span>
-        <input v-model.number="opacity" @input="renderWatermark" type="range" min="5" max="100" style="width:100px;display:inline-block;vertical-align:middle;" />
+        <input v-model.number="opacity" @input="onSettingChange" type="range" min="5" max="100" style="width:100px;display:inline-block;vertical-align:middle;" />
         <span style="margin-left:5px;line-height:38px;">{{ opacity }}%</span>
         <span style="margin-left:10px;line-height:38px;">颜色</span>
-        <input v-model="color" @input="renderWatermark" type="color" style="width:36px;height:36px;display:inline-block;vertical-align:middle;border:none;cursor:pointer;" />
+        <input v-model="color" @input="onSettingChange" type="color" style="width:36px;height:36px;display:inline-block;vertical-align:middle;border:none;cursor:pointer;" />
       </div>
 
       <div
@@ -41,89 +41,105 @@
   </v-tab>
 </template>
 <script>
+var STORAGE_KEY = 'me_watermark_config'
+
+function loadConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
+  } catch (e) {
+    return {}
+  }
+}
+
+function saveConfig(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
 export default {
   meta: {
     menuName: '图片加水印',
     sort: 15
   },
   data() {
+    var saved = loadConfig()
     return {
       tabItems: [{ Name: 'watermark', Title: '图片水印' }],
       srcImage: null,
       originalImage: null,
-      watermarkText: '',
-      mode: 'center',
+      watermarkText: saved.watermarkText || '水印',
+      mode: saved.mode || 'tile',
       modeOptions: [
         { Text: '居中', Value: 'center' },
         { Text: '平铺', Value: 'tile' }
       ],
-      fontSize: null,
-      opacity: 40,
-      color: '#ffffff',
+      fontSize: saved.fontSize || 20,
+      opacity: saved.opacity != null ? saved.opacity : 40,
+      color: saved.color || '#999999',
       dragOver: false
-    }
-  },
-  computed: {
-  watch: {
-    mode() {
-      this.renderWatermark()
-    }
-  },
-    autoFontSize() {
-      if (!this.originalImage) return 40
-      return Math.max(16, Math.floor(Math.min(this.originalImage.naturalWidth, this.originalImage.naturalHeight) / 20))
     }
   },
   mounted() {
     this.pasteInit()
   },
   methods: {
+    onSettingChange() {
+      saveConfig({
+        watermarkText: this.watermarkText,
+        mode: this.mode,
+        fontSize: this.fontSize,
+        opacity: this.opacity,
+        color: this.color
+      })
+      this.renderWatermark()
+    },
     onUpload(base64) {
       this.loadImage(base64)
     },
     onDrop(e) {
       this.dragOver = false
-      const file = e.dataTransfer.files[0]
+      var file = e.dataTransfer.files[0]
       if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onload = ev => this.loadImage(ev.target.result)
+        var reader = new FileReader()
+        reader.onload = function (ev) { this.loadImage(ev.target.result) }.bind(this)
         reader.readAsDataURL(file)
       }
     },
     pasteInit() {
-      document.addEventListener('paste', e => {
+      var self = this
+      document.addEventListener('paste', function (e) {
         if (!(e.clipboardData && e.clipboardData.items)) return
-        for (let i = 0; i < e.clipboardData.items.length; i++) {
-          const item = e.clipboardData.items[i]
+        for (var i = 0; i < e.clipboardData.items.length; i++) {
+          var item = e.clipboardData.items[i]
           if (item.kind === 'file' && item.type.startsWith('image/')) {
-            const file = item.getAsFile()
-            const reader = new FileReader()
-            reader.onload = ev => this.loadImage(ev.target.result)
+            var file = item.getAsFile()
+            var reader = new FileReader()
+            reader.onload = function (ev) { self.loadImage(ev.target.result) }
             reader.readAsDataURL(file)
           }
         }
       })
     },
     loadImage(src) {
-      const img = new Image()
-      img.onload = () => {
-        this.originalImage = img
-        this.srcImage = src
-        this.$nextTick(() => this.renderWatermark())
+      var img = new Image()
+      var self = this
+      img.onload = function () {
+        self.originalImage = img
+        self.srcImage = src
+        self.$nextTick(function () { self.renderWatermark() })
       }
       img.src = src
     },
     renderWatermark() {
       if (!this.originalImage || !this.watermarkText) return
-      const img = this.originalImage
-      const canvas = document.createElement('canvas')
+      var img = this.originalImage
+      var canvas = document.createElement('canvas')
       canvas.width = img.naturalWidth
       canvas.height = img.naturalHeight
-      const ctx = canvas.getContext('2d')
+      var ctx = canvas.getContext('2d')
       ctx.drawImage(img, 0, 0)
 
-      const fs = this.fontSize || this.autoFontSize
-      ctx.font = `bold ${fs}px "Microsoft YaHei","PingFang SC",sans-serif`
+      var fs = this.fontSize || 20
+      ctx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif'
       ctx.fillStyle = this.colorHexToRgba(this.color, this.opacity / 100)
 
       if (this.mode === 'center') {
@@ -133,19 +149,18 @@ export default {
       } else {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        const metrics = ctx.measureText(this.watermarkText)
-        const tw = metrics.width
-        const th = fs
-        const gapX = Math.max(tw * 2.5, 100)
-        const gapY = Math.max(th * 4, 80)
+        var tw = ctx.measureText(this.watermarkText).width
+        var th = fs
+        var gapX = Math.max(tw * 2.5, 100)
+        var gapY = Math.max(th * 4, 80)
 
         ctx.save()
         ctx.translate(img.naturalWidth / 2, img.naturalHeight / 2)
         ctx.rotate(-25 * Math.PI / 180)
 
-        const range = Math.max(img.naturalWidth, img.naturalHeight) * 1.5
-        for (let y = -range; y < range; y += gapY) {
-          for (let x = -range; x < range; x += gapX) {
+        var range = Math.max(img.naturalWidth, img.naturalHeight) * 1.5
+        for (var y = -range; y < range; y += gapY) {
+          for (var x = -range; x < range; x += gapX) {
             ctx.fillText(this.watermarkText, x, y)
           }
         }
@@ -156,17 +171,18 @@ export default {
       this._lastCanvas = canvas
     },
     colorHexToRgba(hex, alpha) {
-      const r = parseInt(hex.slice(1, 3), 16)
-      const g = parseInt(hex.slice(3, 5), 16)
-      const b = parseInt(hex.slice(5, 7), 16)
-      return `rgba(${r},${g},${b},${alpha})`
+      var r = parseInt(hex.slice(1, 3), 16)
+      var g = parseInt(hex.slice(3, 5), 16)
+      var b = parseInt(hex.slice(5, 7), 16)
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')'
     },
     downloadImage() {
-      const canvas = this._lastCanvas
+      var canvas = this._lastCanvas
       if (!canvas) return
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
+      var self = this
+      canvas.toBlob(function (blob) {
+        var url = URL.createObjectURL(blob)
+        var a = document.createElement('a')
         a.href = url
         a.download = 'watermarked.png'
         document.body.appendChild(a)
