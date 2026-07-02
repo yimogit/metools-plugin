@@ -10,9 +10,17 @@
       </div>
 
       <div class="layui-form-item" style="padding:5px;">
-        <span style="line-height:38px;margin-right:10px;">水印文字</span>
-        <input v-model="watermarkText" @input="renderWatermark" placeholder="请输入水印文字" class="layui-input" style="width:200px;display:inline-block;" />
-        <span style="margin-left:10px;line-height:38px;">透明度</span>
+        <span style="line-height:38px;margin-right:10px;">文字</span>
+        <input v-model="watermarkText" @input="renderWatermark" placeholder="请输入水印文字" class="layui-input" style="width:160px;display:inline-block;" />
+        <span style="margin-left:10px;line-height:38px;">模式</span>
+        <v-radio v-model="mode" :options="modeOptions" :optionsVal="['center', 'tile']" @change="renderWatermark" style="display:inline-block;"></v-radio>
+        <span style="margin-left:10px;line-height:38px;">字号</span>
+        <input v-model.number="fontSize" @input="renderWatermark" type="number" min="8" :max="autoFontSize * 3 || 200" :placeholder="autoFontSize" class="layui-input" style="width:70px;display:inline-block;" />
+        <span style="line-height:38px;color:#999;">px</span>
+      </div>
+
+      <div class="layui-form-item" style="padding:5px;">
+        <span style="line-height:38px;">透明度</span>
         <input v-model.number="opacity" @input="renderWatermark" type="range" min="5" max="100" style="width:100px;display:inline-block;vertical-align:middle;" />
         <span style="margin-left:5px;line-height:38px;">{{ opacity }}%</span>
         <span style="margin-left:10px;line-height:38px;">颜色</span>
@@ -44,9 +52,21 @@ export default {
       srcImage: null,
       originalImage: null,
       watermarkText: '',
+      mode: 'center',
+      modeOptions: [
+        { Text: '居中', Value: 'center' },
+        { Text: '平铺', Value: 'tile' }
+      ],
+      fontSize: null,
       opacity: 40,
       color: '#ffffff',
       dragOver: false
+    }
+  },
+  computed: {
+    autoFontSize() {
+      if (!this.originalImage) return 40
+      return Math.max(16, Math.floor(Math.min(this.originalImage.naturalWidth, this.originalImage.naturalHeight) / 20))
     }
   },
   mounted() {
@@ -97,13 +117,35 @@ export default {
       const ctx = canvas.getContext('2d')
       ctx.drawImage(img, 0, 0)
 
-      const maxFontSize = Math.max(24, Math.floor(Math.min(img.naturalWidth, img.naturalHeight) / 15))
-      ctx.font = `bold ${maxFontSize}px "Microsoft YaHei","PingFang SC",sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+      const fs = this.fontSize || this.autoFontSize
+      ctx.font = `bold ${fs}px "Microsoft YaHei","PingFang SC",sans-serif`
       ctx.fillStyle = this.colorHexToRgba(this.color, this.opacity / 100)
 
-      ctx.fillText(this.watermarkText, img.naturalWidth / 2, img.naturalHeight / 2)
+      if (this.mode === 'center') {
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(this.watermarkText, img.naturalWidth / 2, img.naturalHeight / 2)
+      } else {
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        const metrics = ctx.measureText(this.watermarkText)
+        const tw = metrics.width
+        const th = fs
+        const gapX = Math.max(tw * 2.5, 100)
+        const gapY = Math.max(th * 4, 80)
+
+        ctx.save()
+        ctx.translate(img.naturalWidth / 2, img.naturalHeight / 2)
+        ctx.rotate(-25 * Math.PI / 180)
+
+        const range = Math.max(img.naturalWidth, img.naturalHeight) * 1.5
+        for (let y = -range; y < range; y += gapY) {
+          for (let x = -range; x < range; x += gapX) {
+            ctx.fillText(this.watermarkText, x, y)
+          }
+        }
+        ctx.restore()
+      }
 
       this.srcImage = canvas.toDataURL('image/png')
       this._lastCanvas = canvas
