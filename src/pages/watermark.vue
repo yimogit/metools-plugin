@@ -13,7 +13,7 @@
         <span style="line-height:38px;margin-right:10px;">文字</span>
         <input v-model="watermarkText" @input="renderWatermark" placeholder="请输入水印文字" class="layui-input" style="width:160px;display:inline-block;" />
         <span style="margin-left:10px;line-height:38px;">模式</span>
-        <v-radio v-model="mode" :options="modeOptions" :optionsVal="['center', 'tile']" @change="renderWatermark" style="display:inline-block;"></v-radio>
+        <v-radio v-model="mode" :options="modeOptions" :optionsVal="['center', 'tile']" style="display:inline-block;"></v-radio>
         <span style="margin-left:10px;line-height:38px;">字号</span>
         <input v-model.number="fontSize" @input="renderWatermark" type="number" min="8" :max="autoFontSize * 3 || 200" :placeholder="autoFontSize" class="layui-input" style="width:70px;display:inline-block;" />
         <span style="line-height:38px;color:#999;">px</span>
@@ -64,6 +64,11 @@ export default {
     }
   },
   computed: {
+  watch: {
+    mode() {
+      this.renderWatermark()
+    }
+  },
     autoFontSize() {
       if (!this.originalImage) return 40
       return Math.max(16, Math.floor(Math.min(this.originalImage.naturalWidth, this.originalImage.naturalHeight) / 20))
