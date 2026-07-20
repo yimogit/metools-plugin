@@ -15,6 +15,7 @@
     "jr-qrcode": "^1.0.5",
     "jssha": "^2.3.1",
     "marked": "^0.3.6",
+    "pdf-lib": "^1.17.1",
     "qr-code-with-logo": "^1.1.0",
     "thirty-two": "^1.0.2",
     "vue": "^2.5.16",
