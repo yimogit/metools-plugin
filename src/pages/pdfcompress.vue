@@ -1,6 +1,7 @@
 <template>
   <v-tab :items="tabItems">
-    <div slot="pdfcompress">
+    <!-- === 压缩 Tab === -->
+    <div slot="compress">
       <div class="pc-toolbar">
         <span class="pc-toolbar-text">拖拽 PDF 到下方区域或点击上传</span>
         <v-upload @before="onUpload" :beforeShow="true" :uploadApi="'/static/data/editorUpload.json'" style="height:30px;" accept=".pdf">
@@ -60,6 +61,56 @@
         <div v-else class="pc-mobile-hint">点击上方「选择 PDF」上传文件</div>
       </div>
     </div>
+
+    <!-- === 提取图片 Tab === -->
+    <div slot="extract">
+      <div class="pc-toolbar">
+        <span class="pc-toolbar-text">拖拽 PDF 到下方区域或点击上传</span>
+        <v-upload @before="onUploadExtract" :beforeShow="true" :uploadApi="'/static/data/editorUpload.json'" style="height:30px;" accept=".pdf">
+          <v-button style="position:absolute;">选择 PDF</v-button>
+        </v-upload>
+        <v-button v-if="extractImages.length" style="margin-left:10px;" @click="downloadAllImages">下载全部图片</v-button>
+        <v-button v-if="extractOriginBytes" style="margin-left:5px;" @click="startExtract" :disabled="extracting">
+          <span v-if="extracting">提取中...</span>
+          <span v-else>提取图片</span>
+        </v-button>
+      </div>
+
+      <div class="pc-info" v-if="extractOriginBytes">
+        <div class="pc-info-row">
+          <span class="pc-info-label">PDF 大小：</span><span class="pc-info-val">{{ formatSize(extractOriginSize) }}</span>
+          <span class="pc-info-label" style="margin-left:16px;">页数：</span><span class="pc-info-val">{{ extractPageCount }} 页</span>
+          <span v-if="extractImages.length" class="pc-info-label" style="margin-left:16px;">找到：</span>
+          <span v-if="extractImages.length" class="pc-info-val pc-reduced">{{ extractImages.length }} 张图片</span>
+        </div>
+      </div>
+
+      <div class="pc-drop-zone" :class="{'pc-drop-active': extractDragOver}"
+        @dragover.prevent="extractDragOver=true" @dragleave.prevent="extractDragOver=false" @drop.prevent="onDropExtract"
+        style="min-height:auto; padding:10px;">
+        <!-- 提取中 -->
+        <div v-if="extracting" class="pc-status">
+          <span class="pc-status-text">正在提取图片...</span>
+          <div class="pc-progress"><div class="pc-progress-bar" :style="{width: extractProgress + '%'}"></div></div>
+        </div>
+
+        <!-- 图片列表 -->
+        <div v-else-if="extractImages.length" class="ei-grid">
+          <div v-for="(img, idx) in extractImages" :key="idx" class="ei-card">
+            <img :src="img.url" class="ei-thumb" @click="previewImage(img)" />
+            <div class="ei-meta">
+              <span class="ei-size">{{ img.width }}×{{ img.height }}</span>
+              <span class="ei-bytes">{{ formatSize(img.bytes) }}</span>
+              <a class="ei-dl" @click="downloadImage(img, idx)">下载</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空 -->
+        <div v-else-if="extractOriginBytes" class="pc-placeholder" style="line-height:60px;">PDF 已加载，点击「提取图片」</div>
+        <div v-else class="pc-placeholder" style="line-height:60px;">拖拽 PDF 文件到此处</div>
+      </div>
+    </div>
   </v-tab>
 </template>
 <script>
@@ -71,16 +122,19 @@ function saveConfig(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-// pdf-lib 通过 webpack 打包，在全局作用域不可用
-// 这里通过 require 延迟加载
 var PDFDocument = null
+var PDFName = null
 
 module.exports = {
-  meta: { menuName: 'PDF 压缩', sort: 12 },
+  meta: { menuName: 'PDF 操作', sort: 12 },
   data: function () {
     var saved = loadConfig()
     return {
-      tabItems: [{ Name: 'pdfcompress', Title: 'PDF 压缩' }],
+      tabItems: [
+        { Name: 'compress', Title: '压缩' },
+        { Name: 'extract', Title: '提取图片' }
+      ],
+      // 压缩 Tab 状态
       originalBytes: null,
       originalSize: 0,
       pageCount: 0,
@@ -101,6 +155,17 @@ module.exports = {
       processing: false,
       progress: 0,
       fileName: '',
+
+      // 提取 Tab 状态
+      extractOriginBytes: null,
+      extractOriginSize: 0,
+      extractPageCount: 0,
+      extractImages: [],
+      extractDragOver: false,
+      extracting: false,
+      extractProgress: 0,
+      extractFileName: '',
+
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1200
     }
   },
@@ -129,10 +194,20 @@ module.exports = {
       })
     },
     formatSize: function (bytes) {
+      if (bytes == null) return '0 B'
       if (bytes < 1024) return bytes + ' B'
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
       return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
     },
+    ensurePdfLib: function () {
+      if (!PDFDocument) {
+        var pdfLib = require('pdf-lib')
+        PDFDocument = pdfLib.PDFDocument
+        PDFName = pdfLib.PDFName
+      }
+    },
+
+    // ==================== 压缩 Tab ====================
     onUpload: function (base64) {
       var bytes = this.base64ToBytes(base64)
       this.loadPdf(bytes)
@@ -170,10 +245,15 @@ module.exports = {
     loadPdf: function (bytes) {
       this.originalBytes = bytes
       if (!this.originalSize) this.originalSize = bytes.length
-      var self = this
-      if (!PDFDocument) {
-        PDFDocument = require('pdf-lib').PDFDocument
+      // 同步到提取 Tab
+      if (!this.extractOriginBytes) {
+        this.extractOriginBytes = bytes
+        this.extractOriginSize = bytes.length
+        this.extractFileName = this.fileName
+        this.loadExtractPdf(bytes)
       }
+      var self = this
+      this.ensurePdfLib()
       PDFDocument.load(bytes, { ignoreEncryption: true }).then(function (doc) {
         self.pageCount = doc.getPageCount()
       }).catch(function () {
@@ -190,19 +270,13 @@ module.exports = {
       this.reduction = null
 
       var self = this
-      if (!PDFDocument) {
-        PDFDocument = require('pdf-lib').PDFDocument
-      }
-
+      this.ensurePdfLib()
       var quality = this.effectiveQuality / 100
       var maxWidth = this.maxImageWidth
 
       PDFDocument.load(this.originalBytes, { ignoreEncryption: true }).then(function (doc) {
         return self.compressImages(doc, quality, maxWidth).then(function () {
-          return doc.save({
-            useObjectStreams: true,
-            addDefaultPage: false
-          })
+          return doc.save({ useObjectStreams: true, addDefaultPage: false })
         })
       }).then(function (savedBytes) {
         self.compressedBytes = savedBytes
@@ -210,7 +284,7 @@ module.exports = {
         var orig = self.originalSize || self.originalBytes.length
         if (orig > 0) {
           self.reduction = ((1 - savedBytes.length / orig) * 100).toFixed(1)
-          if (self.reduction < 0) self.reduction = '0.0'
+          if (parseFloat(self.reduction) < 0) self.reduction = '0.0'
         }
         var blob = new Blob([savedBytes], { type: 'application/pdf' })
         if (self.compressedPdfUrl) { URL.revokeObjectURL(self.compressedPdfUrl) }
@@ -223,6 +297,217 @@ module.exports = {
         window.layui.layer.msg('压缩失败: ' + (err.message || '未知错误'))
       })
     },
+
+    // ==================== 提取图片 Tab ====================
+    onUploadExtract: function (base64) {
+      var bytes = this.base64ToBytes(base64)
+      this.loadExtractPdfMain(bytes)
+    },
+    onDropExtract: function (e) {
+      this.extractDragOver = false
+      var file = e.dataTransfer.files[0]
+      if (!file) return
+      this.readExtractFile(file)
+    },
+    readExtractFile: function (file) {
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) return
+      this.extractFileName = file.name
+      this.extractOriginSize = file.size
+      this.extractImages = []
+      var self = this
+      var reader = new FileReader()
+      reader.onload = function (ev) {
+        var bytes = new Uint8Array(ev.target.result)
+        self.loadExtractPdfMain(bytes)
+      }
+      reader.readAsArrayBuffer(file)
+    },
+    loadExtractPdfMain: function (bytes) {
+      this.extractOriginBytes = bytes
+      this.extractOriginSize = bytes.length
+      this.extractImages = []
+      this.loadExtractPdf(bytes)
+    },
+    loadExtractPdf: function (bytes) {
+      var self = this
+      this.ensurePdfLib()
+      PDFDocument.load(bytes, { ignoreEncryption: true }).then(function (doc) {
+        self.extractPageCount = doc.getPageCount()
+      }).catch(function () {
+        self.extractPageCount = 0
+      })
+    },
+    startExtract: function () {
+      if (!this.extractOriginBytes) return
+      this.extracting = true
+      this.extractProgress = 0
+      this.extractImages = []
+
+      var self = this
+      this.ensurePdfLib()
+
+      PDFDocument.load(this.extractOriginBytes, { ignoreEncryption: true }).then(function (doc) {
+        return self.extractAllImages(doc)
+      }).then(function () {
+        self.extracting = false
+        self.extractProgress = 100
+      }).catch(function (err) {
+        console.error(err)
+        self.extracting = false
+        window.layui.layer.msg('提取失败: ' + (err.message || '未知错误'))
+      })
+    },
+    extractAllImages: function (doc) {
+      var self = this
+      var context = doc.context
+      var allObjects = []
+
+      try {
+        context.enumerateIndirectObjects().forEach(function (ref, obj) {
+          allObjects.push({ ref: ref, obj: obj })
+        })
+      } catch (e) {
+        return Promise.resolve()
+      }
+
+      var imageStreams = []
+      for (var i = 0; i < allObjects.length; i++) {
+        var item = allObjects[i]
+        var dict = item.obj.dict
+        if (!dict) continue
+        try {
+          var subtype = dict.get(PDFName.of('Subtype'))
+          if (!subtype || subtype.toString() !== '/Image') continue
+          var width = dict.get(PDFName.of('Width'))
+          var height = dict.get(PDFName.of('Height'))
+          if (!width || !height) continue
+          imageStreams.push({
+            obj: item.obj,
+            width: Number(width),
+            height: Number(height)
+          })
+        } catch (e2) { /* skip */ }
+      }
+
+      if (imageStreams.length === 0) {
+        window.layui.layer.msg('未找到嵌入图片')
+        return Promise.resolve()
+      }
+
+      var total = imageStreams.length
+      var done = 0
+
+      function processNext(index) {
+        if (index >= total) {
+          self.extractProgress = 100
+          return Promise.resolve()
+        }
+        self.extractProgress = Math.round((done / total) * 100)
+        return self.extractSingleImage(imageStreams[index]).then(function (result) {
+          if (result) self.extractImages.push(result)
+          done++
+          return processNext(index + 1)
+        })
+      }
+
+      return processNext(0)
+    },
+    extractSingleImage: function (stream) {
+      var rawBytes = null
+      try {
+        var obj = stream.obj
+        // pdf-lib internally decompresses streams when accessing contents
+        if (obj.contents && obj.contents.length > 0) {
+          rawBytes = new Uint8Array(obj.contents)
+        } else if (typeof obj.getContents === 'function') {
+          rawBytes = obj.getContents()
+        } else if (obj.bytes) {
+          rawBytes = new Uint8Array(obj.bytes)
+        }
+      } catch (e) {
+        return Promise.resolve(null)
+      }
+
+      if (!rawBytes || rawBytes.length === 0) return Promise.resolve(null)
+
+      // 尝试检测图片类型
+      var isJpeg = rawBytes[0] === 0xFF && rawBytes[1] === 0xD8
+      var isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50 && rawBytes[2] === 0x4E
+      var mime = isJpeg ? 'image/jpeg' : (isPng ? 'image/png' : 'image/png')
+
+      var self = this
+      return new Promise(function (resolve) {
+        var blob = new Blob([rawBytes], { type: mime })
+        var url = URL.createObjectURL(blob)
+        var img = new Image()
+        img.onload = function () {
+          // 如果是常见格式（JPEG/PNG），直接用原始 blob
+          var actualMime = mime
+          if (!isJpeg && !isPng) {
+            // 未知格式，尝试用 canvas 转 PNG
+            var c = document.createElement('canvas')
+            c.width = stream.width
+            c.height = stream.height
+            var ctx = c.getContext('2d')
+            ctx.drawImage(img, 0, 0)
+            URL.revokeObjectURL(url)
+            var pngUrl = c.toDataURL('image/png')
+            resolve({
+              url: pngUrl,
+              width: stream.width,
+              height: stream.height,
+              bytes: rawBytes.length,
+              dataUrl: pngUrl
+            })
+          } else {
+            resolve({
+              url: url,
+              width: stream.width,
+              height: stream.height,
+              bytes: rawBytes.length,
+              dataUrl: null
+            })
+          }
+        }
+        img.onerror = function () {
+          URL.revokeObjectURL(url)
+          resolve(null)
+        }
+        img.src = url
+      })
+    },
+    previewImage: function (img) {
+      // 新窗口打开大图
+      window.open(img.url, '_blank')
+    },
+    downloadImage: function (img, idx) {
+      var a = document.createElement('a')
+      var prefix = (this.extractFileName || 'pdf').replace(/\.pdf$/i, '')
+      a.download = prefix + '_img' + (idx + 1) + '.png'
+      a.href = img.dataUrl || img.url
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    },
+    downloadAllImages: function () {
+      var self = this
+      var prefix = (this.extractFileName || 'pdf').replace(/\.pdf$/i, '')
+      // 逐个下载（浏览器安全限制不允许批量触发下载）
+      function downloadSeq(i) {
+        if (i >= self.extractImages.length) return
+        var img = self.extractImages[i]
+        var a = document.createElement('a')
+        a.download = prefix + '_img' + (i + 1) + '.png'
+        a.href = img.dataUrl || img.url
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(function () { downloadSeq(i + 1) }, 500)
+      }
+      if (self.extractImages.length > 0) downloadSeq(0)
+    },
+
+    // ==================== 共用图片压缩逻辑 ====================
     compressImages: function (doc, quality, maxWidth) {
       var self = this
       var context = doc.context
@@ -233,64 +518,49 @@ module.exports = {
           allObjects.push({ ref: ref, obj: obj })
         })
       } catch (e) {
-        // 某些版本可能不支持 enumerateIndirectObjects
         return Promise.resolve()
       }
 
-      // 找到所有图片流
       var imageStreams = []
       for (var i = 0; i < allObjects.length; i++) {
         var item = allObjects[i]
         var dict = item.obj.dict
         if (!dict) continue
-        // 检查是否是图片 XObject
-        var subtype = dict.get('Subtype')
-        if (subtype && subtype.toString() === '/Image') {
-          var width = dict.get('Width')
-          var height = dict.get('Height')
-          var filter = dict.get('Filter')
-          if (width && height) {
-            imageStreams.push({
-              ref: item.ref,
-              obj: item.obj,
-              width: Number(width),
-              height: Number(height),
-              filter: filter ? filter.toString() : null
-            })
-          }
-        }
+        try {
+          var subtype = dict.get(PDFName.of('Subtype'))
+          if (!subtype || subtype.toString() !== '/Image') continue
+          var width = dict.get(PDFName.of('Width'))
+          var height = dict.get(PDFName.of('Height'))
+          if (!width || !height) continue
+          imageStreams.push({
+            ref: item.ref,
+            obj: item.obj,
+            width: Number(width),
+            height: Number(height)
+          })
+        } catch (e2) { /* skip */ }
       }
 
-      if (imageStreams.length === 0) {
-        return Promise.resolve()
-      }
+      if (imageStreams.length === 0) return Promise.resolve()
 
       var total = imageStreams.length
       var done = 0
 
-      // 逐个处理图片
       function processNext(index) {
-        if (index >= imageStreams.length) {
+        if (index >= total) {
           self.progress = 100
           return Promise.resolve()
         }
         self.progress = Math.round((done / total) * 90)
-        var stream = imageStreams[index]
-        return self.compressStreamImage(stream, quality, maxWidth).then(function (newBytes) {
+        return self.compressStreamImage(imageStreams[index], quality, maxWidth).then(function (newBytes) {
           if (newBytes) {
-            // 替换图片流数据
             try {
-              // pdf-lib 内部替换：清除原始数据并写入新的
-              stream.obj.contents = newBytes
-              // 更新 Filter 为 DCTDecode (JPEG)
-              var dict = stream.obj.dict
-              dict.set('Filter', context.obj('DCTDecode'))
-              // 移除不必要的条目
-              dict.delete('DecodeParms')
-              dict.delete('SMask')
-            } catch (e) {
-              // 静默失败，保持原始图片
-            }
+              imageStreams[index].obj.contents = newBytes
+              var d = imageStreams[index].obj.dict
+              d.set(PDFName.of('Filter'), context.obj('DCTDecode'))
+              d.delete(PDFName.of('DecodeParms'))
+              d.delete(PDFName.of('SMask'))
+            } catch (e) { /* skip */ }
           }
           done++
           return processNext(index + 1)
@@ -300,39 +570,27 @@ module.exports = {
       return processNext(0)
     },
     compressStreamImage: function (stream, quality, maxWidth) {
-      var self = this
-      // 获取图片原始字节
       var rawBytes = null
       try {
-        // pdf-lib 的 stream 对象可能有不同的获取内容方式
         if (stream.obj.contents && stream.obj.contents.length > 0) {
-          rawBytes = stream.obj.contents
-        } else if (stream.obj.getContents) {
+          rawBytes = new Uint8Array(stream.obj.contents)
+        } else if (typeof stream.obj.getContents === 'function') {
           rawBytes = stream.obj.getContents()
-        } else if (stream.obj.bytes) {
-          rawBytes = stream.obj.bytes
         }
       } catch (e) {
         return Promise.resolve(null)
       }
 
       if (!rawBytes || rawBytes.length === 0) return Promise.resolve(null)
+      if (stream.width <= maxWidth && quality >= 0.85) return Promise.resolve(null)
 
-      // 如果图片宽度已经小于 maxWidth，且质量要求高，跳过
-      if (stream.width <= maxWidth && quality >= 0.85) {
-        return Promise.resolve(null)
-      }
-
-      // 尝试通过 canvas 重新压缩
       return new Promise(function (resolve) {
         var blob = new Blob([rawBytes])
         var url = URL.createObjectURL(blob)
         var img = new Image()
         img.onload = function () {
           URL.revokeObjectURL(url)
-          var w = stream.width
-          var h = stream.height
-          // 如果超过最大宽度，等比缩小
+          var w = stream.width, h = stream.height
           if (w > maxWidth) {
             var scale = maxWidth / w
             w = Math.round(w * scale)
@@ -348,7 +606,6 @@ module.exports = {
             var reader = new FileReader()
             reader.onload = function () {
               var arr = new Uint8Array(reader.result)
-              // 如果压缩后反而更大，不替换
               if (arr.length >= rawBytes.length && quality >= 0.5) {
                 resolve(null)
               } else {
@@ -358,13 +615,11 @@ module.exports = {
             reader.readAsArrayBuffer(blob2)
           }, 'image/jpeg', quality)
         }
-        img.onerror = function () {
-          URL.revokeObjectURL(url)
-          resolve(null)
-        }
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(null) }
         img.src = url
       })
     },
+
     downloadPdf: function () {
       if (!this.compressedPdfUrl) return
       var a = document.createElement('a')
@@ -406,11 +661,24 @@ module.exports = {
 .pc-mobile-wrap { padding: 5px; }
 .pc-mobile-hint { color: #999; text-align: center; padding: 40px 10px; font-size: 13px; }
 
+/* 提取图片网格 */
+.ei-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 5px; }
+.ei-card { width: 140px; border: 1px solid #e8e8e8; border-radius: 4px; overflow: hidden; background: #fff; }
+.ei-card:hover { border-color: #1aa094; }
+.ei-thumb { width: 100%; height: 100px; object-fit: contain; cursor: pointer; background: #fafafa; display: block; }
+.ei-meta { padding: 4px 6px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 11px; color: #999; }
+.ei-size { color: #666; }
+.ei-bytes { color: #aaa; }
+.ei-dl { color: #1aa094; cursor: pointer; text-decoration: none; font-weight: bold; }
+.ei-dl:hover { text-decoration: underline; }
+
 @media (max-width: 767px) {
   .pc-toolbar-text { display: block; line-height: 28px; margin-bottom: 4px; }
   .pc-controls { flex-direction: column; align-items: flex-start; gap: 6px; }
   .pc-label { line-height: 30px; }
   .pc-unit { line-height: 30px; }
   .pc-range-val { line-height: 30px; }
+  .ei-card { width: 110px; }
+  .ei-thumb { height: 80px; }
 }
 </style>
