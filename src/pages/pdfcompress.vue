@@ -122,6 +122,8 @@ function saveConfig(data) {
 
 var PDFDocument = null
 var PDFName = null
+var PDFNumber = null
+var decodePDFRawStream = null
 
 module.exports = {
   meta: { menuName: 'PDF 操作', sort: 12 },
@@ -200,7 +202,54 @@ module.exports = {
         var pdfLib = require('pdf-lib')
         PDFDocument = pdfLib.PDFDocument
         PDFName = pdfLib.PDFName
+        PDFNumber = pdfLib.PDFNumber
+        decodePDFRawStream = pdfLib.decodePDFRawStream
       }
+    },
+
+    getFilterNames: function (dict) {
+      var names = []
+      try {
+        var f = dict.get(PDFName.of('Filter'))
+        if (f) {
+          var matches = f.toString().match(/\/[A-Za-z0-9]+/g)
+          if (matches) names = matches
+        }
+      } catch (e) { /* ignore */ }
+      return names
+    },
+
+    getImageRawBytes: function (obj) {
+      var rawBytes = null
+      try {
+        if (obj.contents && obj.contents.length > 0) {
+          rawBytes = new Uint8Array(obj.contents)
+        } else if (typeof obj.getContents === 'function') {
+          rawBytes = obj.getContents()
+        }
+      } catch (e) {
+        return null
+      }
+      if (!rawBytes || rawBytes.length === 0) return null
+
+      var filters = this.getFilterNames(obj.dict)
+      var isJpeg = filters.indexOf('/DCTDecode') !== -1 ||
+        (rawBytes[0] === 0xFF && rawBytes[1] === 0xD8)
+      var isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50 && rawBytes[2] === 0x4E && rawBytes[3] === 0x47
+      var isJpx = filters.indexOf('/JPXDecode') !== -1
+
+      if (isJpeg || isPng || isJpx) {
+        return { bytes: rawBytes, encoded: true }
+      }
+
+      try {
+        var decoded = decodePDFRawStream({ dict: obj.dict, contents: rawBytes }).decode()
+        if (decoded && decoded.length > 0) {
+          return { bytes: decoded, encoded: false }
+        }
+      } catch (e) { /* fall through to raw bytes */ }
+
+      return { bytes: rawBytes, encoded: false }
     },
 
     // ==================== 压缩 Tab ====================
@@ -347,38 +396,70 @@ module.exports = {
       })
     },
 
-    // 遍历页面 XObject 资源，建立 图片对象编号->页码 映射
+    // 递归遍历页面及其 Form XObject，建立 图片对象编号 -> 页码数组 映射
     buildPageImageMap: function (doc) {
       var context = doc.context
       var pages = doc.getPages()
       var map = {}
+      var visited = {}
+
+      function collect(resources, pageNum) {
+        if (!resources) return
+        var xobjVal = null
+        try {
+          if (typeof resources.get === 'function') {
+            xobjVal = resources.get(PDFName.of('XObject'))
+          }
+        } catch (e) { return }
+        if (!xobjVal) return
+
+        var xobjDict = xobjVal
+        if (!xobjDict.dict) {
+          try { xobjDict = context.lookup(xobjVal) } catch (e) { xobjDict = null }
+        }
+        if (!xobjDict || !xobjDict.dict) return
+
+        var entries = Array.from(xobjDict.dict.entries())
+        for (var e = 0; e < entries.length; e++) {
+          var val = entries[e][1]
+          var objNumber = (val && val.objectNumber !== undefined) ? val.objectNumber : undefined
+          if (objNumber === undefined) continue
+
+          var obj = null
+          try { obj = context.lookup(val) } catch (e2) { obj = null }
+          if (!obj || !obj.dict) continue
+
+          var subtype = null
+          try {
+            var s = obj.dict.get(PDFName.of('Subtype'))
+            if (s) subtype = s.toString()
+          } catch (e3) { /* ignore */ }
+
+          if (subtype === '/Image') {
+            if (!map[objNumber]) map[objNumber] = []
+            if (map[objNumber].indexOf(pageNum) === -1) map[objNumber].push(pageNum)
+          } else if (subtype === '/Form') {
+            var visitKey = objNumber + '_' + pageNum
+            if (visited[visitKey]) continue
+            visited[visitKey] = true
+            var formResources = null
+            try {
+              if (typeof obj.Resources === 'function') {
+                formResources = obj.Resources()
+              } else {
+                formResources = obj.dict.get(PDFName.of('Resources'))
+              }
+              if (formResources && !formResources.dict) formResources = context.lookup(formResources)
+            } catch (e4) { formResources = null }
+            collect(formResources, pageNum)
+          }
+        }
+      }
 
       for (var p = 0; p < pages.length; p++) {
-        try {
-          var resources = null
-          if (typeof pages[p].node.Resources === 'function') {
-            resources = pages[p].node.Resources()
-          } else {
-            resources = pages[p].node.dict.get(PDFName.of('Resources'))
-          }
-          if (!resources) continue
-          var xobjVal = resources.get(PDFName.of('XObject'))
-          if (!xobjVal) continue
-
-          var xobjDict = xobjVal
-          if (!xobjDict.dict) {
-            xobjDict = context.lookup(xobjVal)
-          }
-          if (!xobjDict || !xobjDict.dict) continue
-
-          var entries = Array.from(xobjDict.dict.entries())
-          for (var e = 0; e < entries.length; e++) {
-            var val = entries[e][1]
-            if (val && val.objectNumber !== undefined) {
-              map[val.objectNumber] = p + 1
-            }
-          }
-        } catch (e) { /* skip page */ }
+        var resources = null
+        try { resources = pages[p].node.Resources() } catch (e) { resources = null }
+        collect(resources, p + 1)
       }
 
       return map
@@ -408,17 +489,16 @@ module.exports = {
           var height = obj.dict.get(PDFName.of('Height'))
           if (!width || !height) continue
 
-          var pageNum = 0
-          if (ref && ref.objectNumber !== undefined) {
-            pageNum = pageImageMap[ref.objectNumber] || 0
-          }
+          var pageNums = (ref && ref.objectNumber !== undefined) ? (pageImageMap[ref.objectNumber] || []) : []
+          var pageNum = pageNums.length ? pageNums[0] : 0
 
           imageStreams.push({
             obj: obj,
             ref: ref,
             width: Number(width),
             height: Number(height),
-            pageNum: pageNum
+            pageNum: pageNum,
+            pageNums: pageNums
           })
         } catch (e2) { /* skip */ }
       }
@@ -455,33 +535,13 @@ module.exports = {
     },
 
     extractSingleImage: function (stream) {
-      var rawBytes = null
-      try {
-        var obj = stream.obj
-        if (obj.contents && obj.contents.length > 0) {
-          rawBytes = new Uint8Array(obj.contents)
-        } else if (typeof obj.getContents === 'function') {
-          rawBytes = obj.getContents()
-        }
-      } catch (e) {
-        return Promise.resolve(null)
-      }
+      var decoded = this.getImageRawBytes(stream.obj)
+      if (!decoded) return Promise.resolve(null)
+      var rawBytes = decoded.bytes
 
-      if (!rawBytes || rawBytes.length === 0) return Promise.resolve(null)
-
-      var dict = stream.obj.dict
-      var filter = null
-      try {
-        filter = dict.get(PDFName.of('Filter'))
-        if (filter) filter = filter.toString()
-      } catch (e) { /* skip */ }
-
-      var isJpeg = (filter === '/DCTDecode') || (rawBytes[0] === 0xFF && rawBytes[1] === 0xD8)
-      var isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50 && rawBytes[2] === 0x4E
-      var isJpx = filter === '/JPXDecode'
-
-      if (isJpeg || isPng || isJpx) {
-        var mime = isJpeg ? 'image/jpeg' : (isPng ? 'image/png' : 'image/jpeg')
+      if (decoded.encoded) {
+        var isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50 && rawBytes[2] === 0x4E && rawBytes[3] === 0x47
+        var mime = isPng ? 'image/png' : 'image/jpeg'
         var blob = new Blob([rawBytes], { type: mime })
         var url = URL.createObjectURL(blob)
         return new Promise(function (resolve) {
@@ -724,8 +784,12 @@ module.exports = {
               imageStreams[index].obj.contents = newBytes
               var d = imageStreams[index].obj.dict
               d.set(PDFName.of('Filter'), PDFName.of('DCTDecode'))
+              d.set(PDFName.of('ColorSpace'), PDFName.of('DeviceRGB'))
+              d.set(PDFName.of('BitsPerComponent'), PDFNumber.of(8))
+              d.delete(PDFName.of('Decode'))
               d.delete(PDFName.of('DecodeParms'))
               d.delete(PDFName.of('SMask'))
+              d.delete(PDFName.of('Mask'))
             } catch (e) { /* skip */ }
           }
           done++
@@ -737,37 +801,18 @@ module.exports = {
     },
 
     compressStreamImage: function (stream, quality, maxWidth) {
-      var rawBytes = null
-      try {
-        if (stream.obj.contents && stream.obj.contents.length > 0) {
-          rawBytes = new Uint8Array(stream.obj.contents)
-        } else if (typeof stream.obj.getContents === 'function') {
-          rawBytes = stream.obj.getContents()
-        }
-      } catch (e) {
-        return Promise.resolve(null)
-      }
-
-      if (!rawBytes || rawBytes.length === 0) return Promise.resolve(null)
       if (stream.width <= maxWidth && quality >= 0.85) return Promise.resolve(null)
 
+      var decoded = this.getImageRawBytes(stream.obj)
+      if (!decoded) return Promise.resolve(null)
+      var rawBytes = decoded.bytes
+
       var self = this
-      var dict = stream.obj.dict
-      var filter = null
-      try { filter = dict.get(PDFName.of('Filter')); if (filter) filter = filter.toString() } catch (e) {}
-
-      var isJpeg = (filter === '/DCTDecode') || (rawBytes[0] === 0xFF && rawBytes[1] === 0xD8)
-      var isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50 && rawBytes[2] === 0x4E
-
-      if (isJpeg || isPng || filter === '/JPXDecode') {
+      if (decoded.encoded) {
         return self.compressViaImage(rawBytes, stream, quality, maxWidth)
       }
 
-      if (filter === '/FlateDecode' || !filter) {
-        return self.compressViaRawPixels(rawBytes, stream, quality, maxWidth)
-      }
-
-      return Promise.resolve(null)
+      return self.compressViaRawPixels(rawBytes, stream, quality, maxWidth)
     },
 
     compressViaImage: function (rawBytes, stream, quality, maxWidth) {
